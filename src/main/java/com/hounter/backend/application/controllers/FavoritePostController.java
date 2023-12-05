@@ -1,31 +1,61 @@
 package com.hounter.backend.application.controllers;
 
-import com.hounter.backend.application.DTO.FavoritePostDTO;
+import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
+import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/favorite-posts")
 public class FavoritePostController {
+    private final CustomUserDetailServiceImpl customUserDetailService;
     @Autowired
     private FavoritePostService favoritePostService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getFavoritePost(@PathVariable("userId") Long userId){
-        Set<FavoritePostDTO.FavoritePostResponse> postList = (Set<FavoritePostDTO.FavoritePostResponse>) favoritePostService.getFavoritePost(userId);
-        return null;
+    public FavoritePostController(CustomUserDetailServiceImpl customUserDetailService){
+        this.customUserDetailService = customUserDetailService;
     }
 
-    @PostMapping("/{userId}/{postId}")
-    public ResponseEntity<?> addNewPostToFavorite(@PathVariable("userId") Long userId,@PathVariable("postId") Long postId){
-        return null;
+    @GetMapping()
+    public ResponseEntity<?> getFavoritePost(
+        @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo
+    ){
+        try{
+            Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
+            List<FavoriteResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo, "createAt", "desc", userId);
+            if(responses != null){
+                return ResponseEntity.ok(responses);
+            }
+            return ResponseEntity.noContent().build();
+        }
+        catch(Exception e){
+            return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-    @DeleteMapping("/{userId}/{postId}")
-    public ResponseEntity<?> deletePostFromFavorite(@PathVariable("userId") Long userId,@PathVariable("postId") Long postId){
+
+    @PostMapping("/{postId}")
+    public ResponseEntity<?> addNewPostToFavorite(@Valid @PathVariable("postId") Long postId){
+        try{
+            Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
+            this.favoritePostService.addPostToFavorite(userId, postId);
+            return ResponseEntity.ok("Thêm thành công!");
+        }
+        catch(Exception e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
+        }
+    }
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<?> deletePostFromFavorite(@PathVariable("postId") Long postId){
         return null;
     }
 }

@@ -1,7 +1,6 @@
 package com.hounter.backend.application.DTO.AccountDTO;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

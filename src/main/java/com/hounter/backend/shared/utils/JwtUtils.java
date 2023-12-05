@@ -1,6 +1,7 @@
 package com.hounter.backend.shared.utils;
 
 import com.hounter.backend.business_logic.entities.Account;
+import com.hounter.backend.business_logic.entities.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,10 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Key;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
-import java.util.Date;
 
 public class JwtUtils {
     public static final String SECRET = "54455357342478364763268483726487236482638746283764832";
@@ -30,11 +29,15 @@ public class JwtUtils {
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
-
     public static String generateToken(Account account){
         Map<String,Object> claims=new HashMap<>();
+        Set<Role> roles = account.getRoles();
+        List<String> role_res = new ArrayList<>();
+        for(Role role : roles){
+            role_res.add(role.getName());
+        }
         claims.put("full_name", account.getFull_name());
-        claims.put("role",account.getRoles());
+        claims.put("role",role_res);
         claims.put("active",account.getIsActive());
         return createToken(claims,account.getUsername());
     }

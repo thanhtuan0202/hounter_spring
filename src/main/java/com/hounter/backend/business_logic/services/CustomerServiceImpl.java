@@ -4,23 +4,23 @@ import com.hounter.backend.application.DTO.CustomerDTO.CustomerResponseDTO;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Customer;
-import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.interfaces.CustomerService;
 import com.hounter.backend.business_logic.interfaces.PostService;
-import com.hounter.backend.business_logic.mapper.PostMapping;
+import com.hounter.backend.business_logic.mapper.CustomerMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 
+import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -35,23 +35,27 @@ public class CustomerServiceImpl implements CustomerService {
         Optional<Customer> optionalCustomer = this.customerRepository.findById(customerId);
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
-            CustomerResponseDTO response = new CustomerResponseDTO();
-            response.setId(customer.getId());
-            response.setFull_name(customer.getFull_name());
-            response.setUsername(customer.getUsername());
-            response.setAddress(customer.getAddress());
-            response.setBalance(customer.getBalance());
-            response.setAvatar(customer.getAvatar());
-            response.setPhone_number(customer.getPhoneNumber());
-
-            return response;
+            return CustomerMapping.ResponeMapping(customer);
         }
         return null;
     }
 
     @Override
-    public CustomerResponseDTO changeCustomerInfo(Long id, UpdateInfoDTO CustomerInfo) {
-        return null;
+    @Transactional(rollbackFor = {SQLException.class})
+    public CustomerResponseDTO changeCustomerInfo(Long id, UpdateInfoDTO customerInfo) throws Exception {
+        Optional<Customer> optionalCustomer = this.customerRepository.findById(id);
+        if(optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            customer.setFull_name(customerInfo.getFull_name());
+            customer.setAddress(customerInfo.getAddress());
+            customer.setEmail(customerInfo.getEmail());
+            customer.setPhoneNumber(customerInfo.getPhone_number());
+            customer.setUpdateAt(LocalDate.now());
+            customer.setAvatar(customerInfo.getAvatar());
+            this.customerRepository.save(customer);
+            return CustomerMapping.ResponeMapping(customer);
+        }
+        throw new IllegalIdentifierException("Customer not found");
     }
 
     @Override

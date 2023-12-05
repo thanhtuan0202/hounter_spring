@@ -1,12 +1,15 @@
 package com.hounter.backend.application.controllers;
 
-import com.hounter.backend.application.DTO.AccountDTO.AccountResponse;
 import com.hounter.backend.application.DTO.AccountDTO.ChangePasswordDTO;
 import com.hounter.backend.business_logic.entities.Account;
 import com.hounter.backend.business_logic.services.AccountServiceImpl;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
+import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.exceptions.ConfirmPasswordNotMatch;
+import com.hounter.backend.shared.utils.MappingError;
+
 import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/accounts")
@@ -29,7 +34,7 @@ public class AccountController {
 
     @GetMapping
     public ResponseEntity<Set<Account>> getAllAccounts(){
-        Set<AccountResponse> result = accountService.getAllAccounts();
+        // Set<AccountResponse> result = accountService.getAllAccounts();
         return null;
     }
     @PostMapping("/{account_id}")
@@ -49,11 +54,10 @@ public class AccountController {
     }
 
     @PatchMapping()
-    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO, BindingResult binding) throws Exception {
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO, BindingResult binding) throws Exception {
         if (binding.hasErrors()) {
-            // Handle validation errors
-
-            return ResponseEntity.badRequest().body("Validation failed: " + binding.getAllErrors());
+            List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
+            return ResponseEntity.badRequest().body(error_lst);
         }
         Long user_id = this.userDetailsService.getCurrentUserDetails().getUserId();
         try{

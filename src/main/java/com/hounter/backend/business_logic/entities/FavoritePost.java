@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -17,6 +18,9 @@ public class FavoritePost {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "create_at")
+    private LocalDate createAt;
+    
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id",referencedColumnName = "id", nullable = false)
     private Customer customer;

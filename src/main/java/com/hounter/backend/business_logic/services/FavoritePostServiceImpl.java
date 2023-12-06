@@ -11,6 +11,9 @@ import com.hounter.backend.data_access.repositories.FavoritePostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 
+import jakarta.el.ELException;
+
+import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,8 +68,19 @@ public class FavoritePostServiceImpl implements FavoritePostService {
     }
 
     @Override
-    public FavoriteResponse deletePostFromFavorite(Long userId, Long postId) {
-        return null;
+    public FavoriteResponse deletePostFromFavorite(Long userId, Long postId) throws Exception{
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
+        Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);
+        if(optionalPost.isPresent() && optionalCustomer.isPresent()) {
+            Post post = optionalPost.get();
+            Customer customer = optionalCustomer.get();
+            FavoritePost favoritePost = this.favoritePostRepository.findByCustomerAndPost(customer, post);
+            this.favoritePostRepository.delete(favoritePost);
+        }
+        else if(optionalCustomer.isPresent()) {
+            throw new PostNotFoundException("Can't find post with id " + postId);
+        }
+        throw new IllegalIdentifierException("User not found");
     }
 
 }

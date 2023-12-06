@@ -1,7 +1,6 @@
 package com.hounter.backend.business_logic.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
@@ -59,13 +58,13 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse getPostById(Long postId) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
-        if(optionalPost.isPresent()){
+        if (optionalPost.isPresent()) {
             return PostMapping.PostResponseMapping(optionalPost.get());
         }
         throw new PostNotFoundException("Cannot find post with id = " + postId);
     }
 
-    private List<ShortPostResponse> mappListOfPost(List<Post> posts){
+    private List<ShortPostResponse> mappListOfPost(List<Post> posts) {
         List<ShortPostResponse> responses = new ArrayList<ShortPostResponse>();
         if (!posts.isEmpty()) {
             for (Post post : posts) {
@@ -76,6 +75,7 @@ public class PostServiceImpl implements PostService {
             return null;
         }
     }
+
     @Override
     public List<ShortPostResponse> getAllPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
             Status status) {
@@ -103,7 +103,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<ShortPostResponse> getAllPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
-        Customer customer) {
+            Customer customer) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Post> posts = this.postRepository.findByCustomer(customer, pageable);
         return mappListOfPost(posts);
@@ -111,9 +111,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<ShortPostResponse> getAllPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
-        Customer customer, Status status) {
+            Customer customer, Status status) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        List<Post> posts = this.postRepository.findByCustomerAndStatus(customer,status, pageable);
+        List<Post> posts = this.postRepository.findByCustomerAndStatus(customer, status, pageable);
         return mappListOfPost(posts);
     }
 
@@ -166,12 +166,36 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<ShortPostResponse> filterPost(FilterPostDto filterPostDto) {
-        List<Post> postList = this.postRepository.findAll();
         return null;
     }
 
     @Override
-    public boolean changeStatusPost(Long postId) {
+    public boolean changeStatusPost(Long postId, Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception {
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            Post post = optionalPost.get();
+            if (isAdmin) {
+                return true;
+            }
+            if (post.getCustomer().getId() != userId) {
+                throw new ForbiddenException("You are not allowed to change the status of a post with id " + postId, HttpStatus.FORBIDDEN);
+            } else {
+                if(post.getStatus().equals(Status.delete)){
+                    return false;
+                }
+                else{
+                    for(Status item: Status.values()){
+                        if(changeStatus.getStatus().equals(item.toString())){
+                            post.setStatus(item);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        } else {
+            throw new PostNotFoundException("Cannot find post with id " + postId);
+        }
         return false;
     }
 

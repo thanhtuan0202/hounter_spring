@@ -2,7 +2,7 @@ package com.hounter.backend.shared.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class ForbiddenException extends Exception{
+public class ForbiddenException extends RuntimeException{
     HttpStatus status;
     public ForbiddenException(){
         super();

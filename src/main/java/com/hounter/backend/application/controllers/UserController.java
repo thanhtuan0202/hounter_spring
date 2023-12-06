@@ -45,9 +45,9 @@ public class UserController {
     public ResponseEntity<?> getPostOfUser(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "create_at") String sortBy,
+            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
-            @RequestParam(value = "status") String status) {
+            @RequestParam(value = "status", required = false) String status) {
         try {
             Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
             List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo, sortBy, sortDir,
@@ -64,12 +64,12 @@ public class UserController {
 
     @GetMapping("/payments")
     public ResponseEntity<?> getPaymentList() {
-        return null;
+        return ResponseEntity.ok("PaymentList");
     }
 
     @GetMapping("/balances")
     public ResponseEntity<?> getBalanceHistory() {
-        return null;
+        return ResponseEntity.ok("Balance of user");
     }
 
     @PutMapping()

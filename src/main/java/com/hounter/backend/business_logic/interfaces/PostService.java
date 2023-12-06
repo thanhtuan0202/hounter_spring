@@ -1,5 +1,6 @@
 package com.hounter.backend.business_logic.interfaces;
 
+import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
@@ -24,6 +25,6 @@ public interface PostService {
 
     public List<ShortPostResponse> filterPost(FilterPostDto filter);
     //admin
-    public boolean changeStatusPost(Long postId);
+    public boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;
 
 }

@@ -2,10 +2,12 @@ package com.hounter.backend.business_logic.entities;
 
 import com.hounter.backend.shared.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -57,6 +59,14 @@ public class Post {
 
     @Column(name = "district", nullable = false)
     private String district;
+
+    @Column(name = "latitude", precision = 10, scale = 8)
+    @Digits(integer=2, fraction=8)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 11, scale = 8)
+    @Digits(integer=3, fraction=8)
+    private BigDecimal longitude;
 
     @Column(name = "create_at")
     private LocalDate createAt;

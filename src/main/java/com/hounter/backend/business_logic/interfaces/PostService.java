@@ -20,10 +20,11 @@ public interface PostService {
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Customer customer, Status status);
 
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception;
-    public  PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
-    public boolean deletePost(Long id, Long userId);
+    public PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
+    public PostResponse deletePost(Long id, Long userId);
 
-    public List<ShortPostResponse> filterPost(FilterPostDto filter);
+    public List<ShortPostResponse> filterPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir,FilterPostDto filter);
+    public List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q);
     //admin
     public boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;
 

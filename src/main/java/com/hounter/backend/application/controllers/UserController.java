@@ -83,7 +83,7 @@ public class UserController {
             CustomerResponseDTO result = userService.changeCustomerInfo(userId, userInfoDTO);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

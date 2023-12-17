@@ -11,6 +11,7 @@ import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
+import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import com.hounter.backend.shared.utils.MappingError;
 
 import jakarta.validation.Valid;
@@ -66,11 +67,24 @@ public class PostController {
     @GetMapping("/filter")
     public ResponseEntity<?> getFilterPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
-            @Valid @ModelAttribute FilterPostDto filterDto) {
-        return ResponseEntity.ok("go to filter controller");
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            @Valid @ModelAttribute FilterPostDto filterDto, BindingResult binding) {
+        if (binding.hasErrors()) {
+            List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
+            return ResponseEntity.badRequest().body(error_lst);
+        }
+        try{
+            List<ShortPostResponse> responses = this.postService.filterPost(pageSize, pageNo, sortBy, sortDir, filterDto);
+            if (responses == null) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(responses);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/search")
@@ -78,7 +92,7 @@ public class PostController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
             @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @RequestParam(value = "q") String searchValue) {
         return ResponseEntity.ok("go to search controller" + searchValue);
     }
@@ -140,9 +154,21 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable("id") Long postId) {
-        boolean result = this.postService.deletePost(postId, 1L);
-        return null;
+    public ResponseEntity<?> deletePost(@Valid @PathVariable("id") Long postId) throws Exception{
+        try{
+            Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            PostResponse postResponse = this.postService.deletePost(postId, userId);
+            return ResponseEntity.ok(postResponse);
+        }
+        catch (PostNotFoundException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NO_CONTENT);
+        }
+        catch (ForbiddenException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+        }
+        catch (Exception e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

@@ -21,6 +21,12 @@ import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +61,9 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private PaymentServiceImpl paymentService;
 
+    @PersistenceContext
+    protected EntityManager em;
+
     @Override
     public PostResponse getPostById(Long postId) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
@@ -64,7 +73,7 @@ public class PostServiceImpl implements PostService {
         throw new PostNotFoundException("Cannot find post with id = " + postId);
     }
 
-    private List<ShortPostResponse> mappListOfPost(List<Post> posts) {
+    private List<ShortPostResponse> mapListOfPost(List<Post> posts) {
         List<ShortPostResponse> responses = new ArrayList<ShortPostResponse>();
         if (!posts.isEmpty()) {
             for (Post post : posts) {
@@ -81,7 +90,7 @@ public class PostServiceImpl implements PostService {
             Status status) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Post> posts = this.postRepository.findByStatus(status, pageable);
-        return mappListOfPost(posts);
+        return mapListOfPost(posts);
     }
 
     @Override
@@ -106,7 +115,7 @@ public class PostServiceImpl implements PostService {
             Customer customer) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Post> posts = this.postRepository.findByCustomer(customer, pageable);
-        return mappListOfPost(posts);
+        return mapListOfPost(posts);
     }
 
     @Override
@@ -114,16 +123,16 @@ public class PostServiceImpl implements PostService {
             Customer customer, Status status) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Post> posts = this.postRepository.findByCustomerAndStatus(customer, status, pageable);
-        return mappListOfPost(posts);
+        return mapListOfPost(posts);
     }
 
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception {
         Post post = PostMapping.createPostMapping(createPostDTO);
-        Optional<Customer> op_cutomer = this.customerRepository.findById(userId);
-        if (op_cutomer.isPresent()) {
-            post.setCustomer(op_cutomer.get());
+        Optional<Customer> op_customer = this.customerRepository.findById(userId);
+        if (op_customer.isPresent()) {
+            post.setCustomer(op_customer.get());
         } else {
             throw new Exception("No customer found!");
         }
@@ -144,6 +153,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional(rollbackFor = { Exception.class })
     public PostResponse updatePost(Long postId, CreatePostDto updatePostDTO, Long userId) throws Exception {
         Optional<Post> op_post = this.postRepository.findById(postId);
         if (op_post.isPresent()) {
@@ -151,7 +161,7 @@ public class PostServiceImpl implements PostService {
             if (!Objects.equals(post.getCustomer().getId(), userId)) {
                 throw new ForbiddenException("Forbidden", HttpStatus.FORBIDDEN);
             } else {
-
+                // update data for post
             }
         } else {
             throw new PostNotFoundException("Cannot find post with id " + postId);
@@ -160,32 +170,90 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public boolean deletePost(Long id, Long userId) {
-        return false;
+    @Transactional(rollbackFor = { Exception.class })
+    public PostResponse deletePost(Long postId, Long userId) {
+        Optional<Post> op_post = this.postRepository.findById(postId);
+        if (op_post.isPresent()) {
+            Post post = op_post.get();
+            if (!Objects.equals(post.getCustomer().getId(), userId)) {
+                throw new ForbiddenException("Forbidden", HttpStatus.FORBIDDEN);
+            } else {
+                post.setStatus(Status.delete);
+                Post saved = this.postRepository.save(post);
+                return PostMapping.PostResponseMapping(saved);
+            }
+        } else {
+            throw new PostNotFoundException("Cannot find post with id " + postId);
+        }
     }
 
     @Override
-    public List<ShortPostResponse> filterPost(FilterPostDto filterPostDto) {
+    public List<ShortPostResponse> filterPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
+            FilterPostDto filter) {
+        Optional<Category> category = this.categoryRepository.findById(filter.getCategory());
+        if (!category.isPresent()) {
+            return null;
+        }
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Post> cq = cb.createQuery(Post.class);
+
+        Root<Post> post = cq.from(Post.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (filter.getCity() != null) {
+            predicates.add(cb.equal(post.get("city"), filter.getCity()));
+        }
+
+        if (filter.getCounty() != null) {
+            predicates.add(cb.equal(post.get("county"), filter.getCounty()));
+        }
+        if (filter.getDistrict() != null) {
+            predicates.add(cb.equal(post.get("district"), filter.getDistrict()));
+        }
+        if (filter.getUpperPrice() != null) {
+            predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getUpperPrice()));
+        }
+        if (filter.getLowerPrice() != null) {
+            predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getLowerPrice()));
+        }
+        if (filter.getCategory() != null) {
+            predicates.add(cb.equal(post.get("category"), category.get()));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(post.get("createAt")));
+        List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
+                .setFirstResult((pageNo - 1) * pageSize)
+                .getResultList();
+        if (posts != null) {
+            return this.mapListOfPost(posts);
+        }
         return null;
     }
 
     @Override
-    public boolean changeStatusPost(Long postId, Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception {
+    public List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q){
+        return null;
+    }
+    @Override
+    @Transactional(rollbackFor = { Exception.class })
+    public boolean changeStatusPost(Long postId, Long userId, ChangeStatusDto changeStatus, boolean isAdmin)
+            throws Exception {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             if (isAdmin) {
                 return true;
             }
-            if (post.getCustomer().getId() != userId) {
-                throw new ForbiddenException("You are not allowed to change the status of a post with id " + postId, HttpStatus.FORBIDDEN);
+            if (!Objects.equals(post.getCustomer().getId(), userId)) {
+                throw new ForbiddenException("You are not allowed to change the status of a post with id " + postId,
+                        HttpStatus.FORBIDDEN);
             } else {
-                if(post.getStatus().equals(Status.delete)){
+                if (post.getStatus().equals(Status.delete)) {
                     return false;
-                }
-                else{
-                    for(Status item: Status.values()){
-                        if(changeStatus.getStatus().equals(item.toString())){
+                } else {
+                    for (Status item : Status.values()) {
+                        if (changeStatus.getStatus().equals(item.toString())) {
                             post.setStatus(item);
                             return true;
                         }

@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService{
@@ -70,6 +71,7 @@ public class FeedbackServiceImpl implements FeedbackService{
     }
 
     @Override
+    @Transactional(rollbackFor = { Exception.class })
     public FeedbackResponse createFeedback(CreateFeedback createFeedback, Long postId, Long userId) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);

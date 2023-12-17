@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,7 @@ public class FavoritePostServiceImpl implements FavoritePostService {
     }
 
     @Override
+    @Transactional(rollbackFor = { Exception.class })
     public FavoriteResponse addPostToFavorite(Long userId, Long postId) throws Exception {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if(optionalPost.isPresent()) {
@@ -68,6 +70,7 @@ public class FavoritePostServiceImpl implements FavoritePostService {
     }
 
     @Override
+    @Transactional(rollbackFor = { Exception.class })
     public FavoriteResponse deletePostFromFavorite(Long userId, Long postId) throws Exception{
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);

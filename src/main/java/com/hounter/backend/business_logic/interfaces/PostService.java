@@ -1,5 +1,7 @@
 package com.hounter.backend.business_logic.interfaces;
 
+import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
+import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
@@ -22,10 +24,11 @@ public interface PostService {
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception;
     public PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
     public PostResponse deletePost(Long id, Long userId);
-
+    public FeedbackResponse createNewFeedback(CreateFeedback createFeedback, Long postId, Long userId);
     public List<ShortPostResponse> filterPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir,FilterPostDto filter);
     public List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q);
     //admin
+    public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo,Long postId);
     public boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;
 
 }

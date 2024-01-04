@@ -1,6 +1,7 @@
 package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.AccountDTO.*;
+import com.hounter.backend.application.DTO.AuthDTO;
 import com.hounter.backend.business_logic.entities.Account;
 import com.hounter.backend.business_logic.entities.Customer;
 
@@ -39,13 +40,17 @@ public class AccountServiceImpl implements AccountService {
         this.passwordEncoder = passwordEncoder;
     }
     @Override
-    public String login(LoginDTO loginDTO) throws Exception {
+    public AuthDTO login(LoginDTO loginDTO) throws Exception {
         Optional<Account> account = accountRepository.findByUsername(loginDTO.getUsername());
         if(account.isPresent()) {
             Account currentAccount = account.get();
             boolean matchPassword = this.passwordEncoder.matches(loginDTO.getPassword(),currentAccount.getPassword());
             if(matchPassword) {
-                return JwtUtils.generateToken(currentAccount);
+                if(!currentAccount.getIsActive()){
+                    throw new Exception("Tài khoản hiện đang bị khoá. Vui lòng thử lại hoặc liên hệ hỗ trợ!");
+                }
+                String token = JwtUtils.generateToken(currentAccount);
+                return new AuthDTO(currentAccount.getUsername(), currentAccount.getEmail(),currentAccount.getFull_name(),currentAccount.getAvatar(),token);
             }
             else{
                 throw new Exception("Thông tin tài khoản hoặc mật khẩu không chính xác.");

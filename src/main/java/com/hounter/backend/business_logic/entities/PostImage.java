@@ -1,24 +1,23 @@
 package com.hounter.backend.business_logic.entities;
 
+import com.hounter.backend.shared.part_entity.PostImageId;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@IdClass(PostImageId.class)
 @Table(name = "post_image")
 @Getter
 @Setter
 @NoArgsConstructor
 public class PostImage {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
     @Column(name = "img_url")
     private String imageUrl;
 
+    @Id
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;

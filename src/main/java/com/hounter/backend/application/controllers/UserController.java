@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/customers")
@@ -31,6 +32,15 @@ public class UserController {
     }
 
     @GetMapping()
+    public ResponseEntity<?> getListCustomer(
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
+    ){
+        return null;
+    }
+    @GetMapping("/{userId}")
     public ResponseEntity<?> getUserInfo() {
         try {
             Long user_id = this.userDetailsService.getCurrentUserDetails().getUserId();
@@ -41,16 +51,20 @@ public class UserController {
         }
     }
 
-    @GetMapping("/posts")
+    @GetMapping("/{userId}/posts")
     public ResponseEntity<?> getPostOfUser(
+            @PathVariable("userId") Long userId,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
             @RequestParam(value = "status", required = false) String status) {
         try {
-            Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
-            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo, sortBy, sortDir,
+            Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            if(!Objects.equals(tokenId, userId)){
+                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+            }
+            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1, sortBy, sortDir,
                     status, userId);
             if (response == null) {
                 return ResponseEntity.noContent().build();
@@ -62,17 +76,17 @@ public class UserController {
         }
     }
 
-    @GetMapping("/payments")
+    @GetMapping("/{userId}/payments")
     public ResponseEntity<?> getPaymentList() {
         return ResponseEntity.ok("PaymentList");
     }
 
-    @GetMapping("/balances")
+    @GetMapping("/{userId}/balances")
     public ResponseEntity<?> getBalanceHistory() {
         return ResponseEntity.ok("Balance of user");
     }
 
-    @PutMapping()
+    @PutMapping("/{userId}")
     public ResponseEntity<?> changeCustomerInfo(@Valid @RequestBody UpdateInfoDTO userInfoDTO, BindingResult binding) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);

@@ -1,8 +1,10 @@
 package com.hounter.backend.application.controllers;
 
+
 import com.hounter.backend.application.DTO.AccountDTO.AccountResponse;
 import com.hounter.backend.application.DTO.AccountDTO.LoginDTO;
 import com.hounter.backend.application.DTO.AccountDTO.RegisterDTO;
+import com.hounter.backend.application.DTO.AuthDTO;
 import com.hounter.backend.business_logic.interfaces.AccountService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.utils.MappingError;
@@ -34,8 +36,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error_lst);
         }
         try {
-            String res = this.accountService.login(loginDTO);
-            return new ResponseEntity<String>(res, HttpStatus.OK);
+            AuthDTO res = this.accountService.login(loginDTO);
+            return new ResponseEntity<AuthDTO>(res, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }

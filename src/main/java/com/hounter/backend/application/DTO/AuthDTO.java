@@ -1,13 +1,18 @@
 package com.hounter.backend.application.DTO;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuthDTO {
-    private String access_token;
-
-    public String getAccess_token() {
-        return access_token;
-    }
-
-    public void setAccess_token(String access_token) {
-        this.access_token = access_token;
-    }
+    private String username;
+    private String email;
+    private String fullName;
+    private String avatar;
+    private String accessToken;
 }

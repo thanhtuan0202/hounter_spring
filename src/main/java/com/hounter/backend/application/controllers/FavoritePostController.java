@@ -1,5 +1,6 @@
 package com.hounter.backend.application.controllers;
 
+
 import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
@@ -28,10 +29,10 @@ public class FavoritePostController {
     @GetMapping()
     public ResponseEntity<?> getFavoritePost(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo) {
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         try {
             Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
-            List<FavoriteResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo, "createAt",
+            List<FavoriteResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo - 1, "createAt",
                     "desc", userId);
             if (responses != null) {
                 return ResponseEntity.ok(responses);

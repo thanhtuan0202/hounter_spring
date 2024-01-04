@@ -1,5 +1,7 @@
 package com.hounter.backend.business_logic.services;
 
+import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
+import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
@@ -9,6 +11,7 @@ import com.hounter.backend.business_logic.entities.Category;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.entities.PostCost;
+import com.hounter.backend.business_logic.interfaces.FeedbackService;
 import com.hounter.backend.business_logic.interfaces.PostCostService;
 import com.hounter.backend.business_logic.interfaces.PostImageService;
 import com.hounter.backend.business_logic.interfaces.PostService;
@@ -21,6 +24,7 @@ import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 
+import com.hounter.backend.shared.utils.FindPointsAddress;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -36,6 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,6 +65,12 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private PaymentServiceImpl paymentService;
+
+    @Autowired
+    private FeedbackService feedbackService;
+
+    @Autowired
+    private FindPointsAddress findPointsAddress;
 
     @PersistenceContext
     protected EntityManager em;
@@ -127,6 +138,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo, Long postId) {
+        return this.feedbackService.getAllFeedbackByPost(pageSize, pageNo, "createAt", "desc", postId);
+    }
+
+    @Override
     @Transactional(rollbackFor = { Exception.class })
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception {
         Post post = PostMapping.createPostMapping(createPostDTO);
@@ -143,7 +159,9 @@ public class PostServiceImpl implements PostService {
         } else {
             throw new CategoryNotFoundException("Cannot find category with id " + createPostDTO.getCategory());
         }
-
+        FindPointsAddress.LatLng latLng = this.findPointsAddress.getAddressPoints(createPostDTO.getFullAddress());
+        post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
+        post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
         Post saved_post = this.postRepository.save(post);
         PostCost postCost = this.postCostService.enrollPostToCost(saved_post, createPostDTO.getCost(),
                 createPostDTO.getDays());
@@ -162,11 +180,11 @@ public class PostServiceImpl implements PostService {
                 throw new ForbiddenException("Forbidden", HttpStatus.FORBIDDEN);
             } else {
                 // update data for post
+                return null;
             }
         } else {
             throw new PostNotFoundException("Cannot find post with id " + postId);
         }
-        return null;
     }
 
     @Override
@@ -188,10 +206,15 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public FeedbackResponse createNewFeedback(CreateFeedback createFeedback, Long postId, Long userId) {
+        return this.feedbackService.createFeedback(createFeedback,postId,userId);
+    }
+
+    @Override
     public List<ShortPostResponse> filterPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
             FilterPostDto filter) {
         Optional<Category> category = this.categoryRepository.findById(filter.getCategory());
-        if (!category.isPresent()) {
+        if (category.isEmpty()) {
             return null;
         }
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -232,7 +255,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q){
+    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q){
         return null;
     }
     @Override

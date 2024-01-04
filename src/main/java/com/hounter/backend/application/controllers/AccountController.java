@@ -53,8 +53,8 @@ public class AccountController {
         }
     }
 
-    @PatchMapping()
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO, BindingResult binding) throws Exception {
+    @PatchMapping("/{account_id}")
+    public ResponseEntity<?> changePassword(@PathVariable("account_id") Long accountId,@Valid @RequestBody ChangePasswordDTO changePasswordDTO, BindingResult binding) throws Exception {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
             return ResponseEntity.badRequest().body(error_lst);

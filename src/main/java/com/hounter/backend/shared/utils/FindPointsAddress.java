@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -68,8 +71,9 @@ public class FindPointsAddress {
     }
 
     public LatLng getAddressPoints(String address) throws IOException {
+
         String urlStr = "https://www.mapquestapi.com/geocoding/v1/address?"
-                + "inFormat=kvp&outFormat=json&key=" + this.mapQuestApiKey + "&location=" + address;
+                + "inFormat=kvp&outFormat=json&key=" + this.mapQuestApiKey + "&location="+ URLEncoder.encode(address, StandardCharsets.UTF_8);;
 
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

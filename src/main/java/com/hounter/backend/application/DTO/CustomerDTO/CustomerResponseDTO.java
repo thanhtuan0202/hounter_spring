@@ -16,5 +16,6 @@ public class CustomerResponseDTO {
     private String avatar;
     private Integer balance;
     private String phone_number;
+    private String email;
     private String address;
 }

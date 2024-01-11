@@ -2,15 +2,8 @@ package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
-import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
-import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
-import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
-import com.hounter.backend.application.DTO.PostDto.PostResponse;
-import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
-import com.hounter.backend.business_logic.entities.Category;
-import com.hounter.backend.business_logic.entities.Customer;
-import com.hounter.backend.business_logic.entities.Post;
-import com.hounter.backend.business_logic.entities.PostCost;
+import com.hounter.backend.application.DTO.PostDto.*;
+import com.hounter.backend.business_logic.entities.*;
 import com.hounter.backend.business_logic.interfaces.FeedbackService;
 import com.hounter.backend.business_logic.interfaces.PostCostService;
 import com.hounter.backend.business_logic.interfaces.PostImageService;
@@ -138,6 +131,45 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer pageNo,
+                                                     Customer customer,String category_name,Long cost_id,
+                                                     String startDate,String endDate){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Post> cq = cb.createQuery(Post.class);
+
+        Root<Post> post = cq.from(Post.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (category_name != null) {
+            Category category = this.categoryRepository.findByName(category_name);
+            predicates.add(cb.equal(post.get("category"), category));
+        }
+        if(!Objects.equals(startDate, "")) {
+            predicates.add(cb.greaterThanOrEqualTo(post.get("createAt"), startDate));
+        }
+        if(!Objects.equals(endDate, "")) {
+            predicates.add(cb.lessThanOrEqualTo(post.get("createAt"), endDate));
+        }
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(post.get("createAt")));
+        List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
+                .setFirstResult(pageNo * pageSize)
+                .getResultList();
+        if (posts != null) {
+            if(cost_id != 0){
+                List<ShortPostResponse> responses = new ArrayList<>();
+                for (Post item : posts){
+                    if(this.postCostService.getLastCostOfPost(item).getCost().getId().equals(cost_id)){
+                        responses.add(PostMapping.getShortPostResponse(item));
+                    }
+                }
+                return responses;
+            }
+            return this.mapListOfPost(posts);
+        }
+        return null;
+    }
+    @Override
     public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo, Long postId) {
         return this.feedbackService.getAllFeedbackByPost(pageSize, pageNo, "createAt", "desc", postId);
     }
@@ -165,9 +197,10 @@ public class PostServiceImpl implements PostService {
         Post saved_post = this.postRepository.save(post);
         PostCost postCost = this.postCostService.enrollPostToCost(saved_post, createPostDTO.getCost(),
                 createPostDTO.getDays());
+
         this.paymentService.createPayment(postCost, userId);
         this.postImageService.storeImageOfPost(saved_post, createPostDTO.getImageUrls());
-        return PostMapping.PostResponseMapping(saved_post);
+        return PostMapping.PostResponseMapping1(saved_post);
     }
 
     @Override
@@ -242,11 +275,13 @@ public class PostServiceImpl implements PostService {
         if (filter.getCategory() != null) {
             predicates.add(cb.equal(post.get("category"), category.get()));
         }
-
+        if (filter.getStatus() != null) {
+            predicates.add(cb.equal(post.get("status"), filter.getStatus()));
+        }
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
         List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
-                .setFirstResult((pageNo - 1) * pageSize)
+                .setFirstResult(pageNo * pageSize)
                 .getResultList();
         if (posts != null) {
             return this.mapListOfPost(posts);
@@ -258,6 +293,8 @@ public class PostServiceImpl implements PostService {
     public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q){
         return null;
     }
+
+
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public boolean changeStatusPost(Long postId, Long userId, ChangeStatusDto changeStatus, boolean isAdmin)

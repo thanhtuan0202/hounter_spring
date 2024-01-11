@@ -9,10 +9,14 @@ import com.hounter.backend.data_access.repositories.PostCostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.exceptions.CostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,5 +65,12 @@ public class PostCostServiceImpl implements PostCostService {
         else{
             throw new CostNotFoundException("Fail to select cost or not found post!");
         }
+    }
+
+    @Override
+    public PostCost getLastCostOfPost(Post post) {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.fromString("desc"), "date"));
+        List<PostCost> postCosts = this.postCostRepository.findByPost(post,pageable);
+        return postCosts.get(0);
     }
 }

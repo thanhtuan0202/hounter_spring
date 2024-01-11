@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
-
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/customers")
 public class UserController {
@@ -40,6 +40,16 @@ public class UserController {
     ){
         return null;
     }
+    @GetMapping("/get_self_information")
+    public ResponseEntity<?> getSelfUserInfo() {
+        try {
+            Long user_id = this.userDetailsService.getCurrentUserDetails().getUserId();
+            CustomerResponseDTO response = this.userService.getCustomerInfo(user_id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserInfo() {
         try {
@@ -56,16 +66,17 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
-            @RequestParam(value = "status", required = false) String status) {
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "category", required = false, defaultValue = "Nhà trọ") String category,
+            @RequestParam(value = "cost", required = false, defaultValue = "0") Long cost,
+            @RequestParam(value = "beginDate", required = false,defaultValue = "") String beginDate,
+            @RequestParam(value = "endDate", required = false,defaultValue = "") String endDate) {
         try {
             Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
             if(!Objects.equals(tokenId, userId)){
                 return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
             }
-            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1, sortBy, sortDir,
-                    status, userId);
+            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1,category,cost, userId,beginDate,endDate);
             if (response == null) {
                 return ResponseEntity.noContent().build();
             } else {
@@ -87,13 +98,13 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<?> changeCustomerInfo(@Valid @RequestBody UpdateInfoDTO userInfoDTO, BindingResult binding) {
+    public ResponseEntity<?> changeCustomerInfo(@Valid @RequestBody UpdateInfoDTO userInfoDTO, BindingResult binding, @PathVariable("userId") Long userId) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
             return ResponseEntity.badRequest().body(error_lst);
         }
         try {
-            Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            Long userId_token = this.userDetailsService.getCurrentUserDetails().getUserId();
             CustomerResponseDTO result = userService.changeCustomerInfo(userId, userInfoDTO);
             return ResponseEntity.ok(result);
         } catch (Exception e) {

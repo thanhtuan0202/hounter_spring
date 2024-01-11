@@ -2,11 +2,7 @@ package com.hounter.backend.business_logic.interfaces;
 
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
-import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
-import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
-import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
-import com.hounter.backend.application.DTO.PostDto.PostResponse;
-import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
+import com.hounter.backend.application.DTO.PostDto.*;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.shared.enums.Status;
 
@@ -20,7 +16,7 @@ public interface PostService {
     //user
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Customer customer);
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Customer customer, Status status);
-
+    public List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer page,Customer customer,String category,Long cost,String startDate,String endDate);
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception;
     public PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
     public PostResponse deletePost(Long id, Long userId);

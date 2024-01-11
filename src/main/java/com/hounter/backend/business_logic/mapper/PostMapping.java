@@ -39,6 +39,7 @@ public class PostMapping {
             post.getExpireAt(),
             post.getCategory().getId(),
             last.getId(),
+            post.getStatus(),
             lst.get(0).getImageUrl()
         );
     }
@@ -57,7 +58,7 @@ public class PostMapping {
         new_post.setCustomerPhone(create.getCustomerPhone());
         new_post.setCreateAt(LocalDate.now());
         new_post.setUpdateAt(LocalDate.now());
-        new_post.setStatus(Status.waiting);
+        new_post.setStatus(Status.active);
         new_post.setNotes(create.getNote());
         return new_post;
     }
@@ -69,6 +70,8 @@ public class PostMapping {
         response.setDescription(post.getDescription());
         response.setPrice(post.getPrice());
         response.setArea(post.getArea());
+        response.setCategory(post.getCategory().getId());
+        response.setCustomer(post.getCustomer().getId());
         response.setFullAddress(post.getFullAdress());
         response.setCity(post.getCity());
         response.setCounty(post.getCounty());
@@ -77,13 +80,37 @@ public class PostMapping {
         response.setOwnerPhone(post.getCustomerPhone());
         response.setCreateAt(post.getCreateAt());
         response.setExpireAt(post.getExpireAt());
+        response.setStatus(post.getStatus());
+        response.setLatitude(post.getLatitude());
+        response.setLongitude(post.getLongitude());
+        Set<PostImage> images = post.getPostImages();
+        List<PostImage> lst = new ArrayList<>(images);
         List<String> img = new ArrayList<String>();
-        for (PostImage item : post.getPostImages()){
+        for (PostImage item : lst){
             img.add(item.getImageUrl());
         }
         response.setImageList(img);
+        return response;
+    }
 
-
+    public static PostResponse PostResponseMapping1(Post post){
+        PostResponse response = new PostResponse();
+        response.setId(post.getId());
+        response.setTitle(post.getTitle());
+        response.setDescription(post.getDescription());
+        response.setPrice(post.getPrice());
+        response.setArea(post.getArea());
+        response.setCategory(post.getCategory().getId());
+        response.setCustomer(post.getCustomer().getId());
+        response.setFullAddress(post.getFullAdress());
+        response.setCity(post.getCity());
+        response.setCounty(post.getCounty());
+        response.setDistrict(post.getDistrict());
+        response.setOwnerName(post.getCustomerName());
+        response.setOwnerPhone(post.getCustomerPhone());
+        response.setCreateAt(post.getCreateAt());
+        response.setStatus(post.getStatus());
+        response.setExpireAt(post.getExpireAt());
         return response;
     }
 }

@@ -28,7 +28,7 @@ public class PostImageServiceImpl implements PostImageService {
             PostImage post_img = new PostImage();
             post_img.setPost(post);
             post_img.setImageUrl(item);
-            this.postImageRepository.save(post_img);
+            PostImage saved = this.postImageRepository.save(post_img);
         }
     }
 }

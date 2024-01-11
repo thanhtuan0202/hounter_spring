@@ -2,6 +2,7 @@ package com.hounter.backend.shared.part_entity;
 
 import com.hounter.backend.business_logic.entities.Post;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class PostImageId implements Serializable {
     private String imageUrl;
     private Post post;

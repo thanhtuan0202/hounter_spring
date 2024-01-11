@@ -1,5 +1,6 @@
 package com.hounter.backend.application.DTO.PostDto;
 
+import com.hounter.backend.shared.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,5 @@ public class FilterPostDto {
     private Integer upperPrice;
     private Integer lowerPrice;
     private Long category;
+    private Status status;
 }

@@ -47,7 +47,8 @@ public class PostController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            @RequestParam(value = "type", defaultValue = "1") Long type ) {
         try {
             List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, sortBy, sortDir,
                     Status.active);

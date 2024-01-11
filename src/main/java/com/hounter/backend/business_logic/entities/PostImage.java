@@ -2,6 +2,7 @@ package com.hounter.backend.business_logic.entities;
 
 import com.hounter.backend.shared.part_entity.PostImageId;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class PostImage {
     @Id
     @Column(name = "img_url")

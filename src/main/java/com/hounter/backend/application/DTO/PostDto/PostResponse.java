@@ -1,10 +1,13 @@
 package com.hounter.backend.application.DTO.PostDto;
 
+import com.hounter.backend.shared.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,12 +30,10 @@ public class PostResponse {
     private String ownerPhone;
     private LocalDate createAt;
     private LocalDate expireAt;
-
-    // @JsonProperty("category_id")
-    // private Long category;
-
-    // @JsonProperty("customer_id")
-    // private Long customer;
-
+    private Long category;
+    private Long customer;
+    private Status status;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private List<String> imageList;
 }

@@ -1,6 +1,7 @@
 package com.hounter.backend.application.DTO.PostDto;
 
 
+import com.hounter.backend.shared.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,5 +25,6 @@ public class ShortPostResponse {
     private LocalDate expireAt;
     private Long category;
     private Long cost;
+    private Status status;
     private String image;
 }

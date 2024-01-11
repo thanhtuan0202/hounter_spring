@@ -50,7 +50,7 @@ public class AccountServiceImpl implements AccountService {
                     throw new Exception("Tài khoản hiện đang bị khoá. Vui lòng thử lại hoặc liên hệ hỗ trợ!");
                 }
                 String token = JwtUtils.generateToken(currentAccount);
-                return new AuthDTO(currentAccount.getUsername(), currentAccount.getEmail(),currentAccount.getFull_name(),currentAccount.getAvatar(),token);
+                return new AuthDTO(currentAccount.getId(),currentAccount.getUsername(), currentAccount.getEmail(),currentAccount.getFull_name(),currentAccount.getAvatar(),token);
             }
             else{
                 throw new Exception("Thông tin tài khoản hoặc mật khẩu không chính xác.");

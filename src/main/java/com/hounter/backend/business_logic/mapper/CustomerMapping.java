@@ -13,6 +13,7 @@ public class CustomerMapping {
         response.setBalance(customer.getBalance());
         response.setAvatar(customer.getAvatar());
         response.setPhone_number(customer.getPhoneNumber());
+        response.setEmail(customer.getEmail());
         return response;
     }
 }

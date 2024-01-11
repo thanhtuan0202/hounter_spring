@@ -63,7 +63,21 @@ public class CustomUserDetail implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+    public String[] getRolesAsArray() {
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toArray(String[]::new);
+    }
 
+    @Override
+    public String toString() {
+        return "CustomUserDetail{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", authorities=" + authorities +
+                ", userId=" + userId +
+                '}';
+    }
 }
 
 

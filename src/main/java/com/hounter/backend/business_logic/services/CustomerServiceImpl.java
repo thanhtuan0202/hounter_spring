@@ -59,20 +59,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
-            String status, Long customerId) {
+    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo, String category,Long cost, Long customerId,String beginDate,String endDate) {
         Optional<Customer> optionalCustomer = this.customerRepository.findById(customerId);
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
-            if (status != null) {
-                for (Status item : Status.values()) {
-                    if (item.name().equals(status)) {
-                        return this.postService.getAllPost(pageSize, pageNo, sortBy, sortDir, customer, item);
-                    }
-                }
-                return null;
-            }
-            return this.postService.getAllPost(pageSize, pageNo, sortBy, sortDir, customer);
+            return this.postService.filterPostForUser(pageSize, pageNo, customer,category,cost,beginDate,endDate);
         }
         throw new NotFoundException("Customer not found!", HttpStatus.UNAUTHORIZED);
     }

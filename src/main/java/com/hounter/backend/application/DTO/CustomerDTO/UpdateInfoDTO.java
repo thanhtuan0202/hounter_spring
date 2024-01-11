@@ -10,19 +10,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UpdateInfoDTO {
-    @NotBlank
     private String full_name;
-
-    @NotBlank
     @Pattern(regexp = "^\\d{10}$", message = "Must have 10 digit")
     private String phone_number;
-
-    @NotBlank
     private String address;
-    
-    @NotBlank
     private String email;
-
-    @NotBlank
     private String avatar;
 }

@@ -1,5 +1,6 @@
 package com.hounter.backend.data_access.repositories;
 
+import com.hounter.backend.business_logic.entities.Category;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.shared.enums.Status;
@@ -15,6 +16,7 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     public List<Post> findByStatus(Status status,Pageable page);
+    public List<Post> findByStatusAndCategory(Status status, Category category,Pageable page);
     public List<Post> findByCustomer(Customer customer,Pageable page);    
     public List<Post> findByCustomerAndStatus(Customer customer,Status status,Pageable page);
 }

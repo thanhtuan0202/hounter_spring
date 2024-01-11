@@ -8,5 +8,5 @@ import java.util.List;
 public interface CustomerService {
     public CustomerResponseDTO getCustomerInfo(Long CustomerId);
     public CustomerResponseDTO changeCustomerInfo(Long id, UpdateInfoDTO CustomerInfo) throws Exception;
-    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo, String sortBy, String sortDir,String status,Long customerId);
+    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo,String category,Long cost,Long customerId,String beginDate,String endDate);
 }

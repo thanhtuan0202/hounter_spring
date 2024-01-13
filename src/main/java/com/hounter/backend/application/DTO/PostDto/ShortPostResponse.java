@@ -19,7 +19,7 @@ public class ShortPostResponse {
     private Integer price;
     private Integer area;
     private String address;
-    private String customer;
+    private ShortCustomer owner;
     private String phone;
     private LocalDate createAt;
     private LocalDate expireAt;

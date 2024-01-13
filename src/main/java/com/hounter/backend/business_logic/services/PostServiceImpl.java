@@ -72,7 +72,9 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostById(Long postId) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
-            return PostMapping.PostResponseMapping(optionalPost.get());
+            PostResponse response = PostMapping.PostResponseMapping(optionalPost.get());
+            response.setCost(this.postCostService.getLastCostOfPost(optionalPost.get()).getCost().getId());
+            return response;
         }
         throw new PostNotFoundException("Cannot find post with id = " + postId);
     }

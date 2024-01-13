@@ -74,7 +74,7 @@ public class AccountServiceImpl implements AccountService {
         customer.setUsername(registerDTO.getUsername());
         customer.setPassword(hashPassword);
         customer.setFull_name(registerDTO.getFull_name());
-
+        customer.setEmail(registerDTO.getEmail());
 //        customer.setId(new_account.getId());
         customer.setBalance(0);
         customer.setIsActive(true);

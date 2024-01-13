@@ -1,6 +1,6 @@
 package com.hounter.backend.application.DTO.AccountDTO;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,13 +9,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RegisterDTO{
-    @NotEmpty
+    @NotBlank
     private String username;
-    @NotEmpty
+    @NotBlank
     private String password;
-    @NotEmpty
+    @NotBlank
+    private String email;
+    @NotBlank
     private String confirmPassword;
-    @NotEmpty(message = "Must not empty")
+    @NotBlank(message = "Must not empty")
     private String full_name;
 
 }

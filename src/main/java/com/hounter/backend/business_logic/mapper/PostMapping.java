@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
+import com.hounter.backend.application.DTO.PostDto.ShortCustomer;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.entities.PostCost;
@@ -33,7 +34,7 @@ public class PostMapping {
             post.getPrice(),
             post.getArea(),
             post.getFullAdress(),
-            post.getCustomerName(),
+            new ShortCustomer(post.getCustomer().getId(), post.getCustomer().getFull_name(), post.getCustomer().getAvatar()),
             post.getCustomerPhone(),
             post.getCreateAt(),
             post.getExpireAt(),
@@ -71,7 +72,7 @@ public class PostMapping {
         response.setPrice(post.getPrice());
         response.setArea(post.getArea());
         response.setCategory(post.getCategory().getId());
-        response.setCustomer(post.getCustomer().getId());
+        response.setOwner(new ShortCustomer(post.getCustomer().getId(), post.getCustomer().getFull_name(), post.getCustomer().getAvatar()));
         response.setFullAddress(post.getFullAdress());
         response.setCity(post.getCity());
         response.setCounty(post.getCounty());
@@ -101,7 +102,7 @@ public class PostMapping {
         response.setPrice(post.getPrice());
         response.setArea(post.getArea());
         response.setCategory(post.getCategory().getId());
-        response.setCustomer(post.getCustomer().getId());
+        response.setOwner(new ShortCustomer(post.getCustomer().getId(), post.getCustomer().getFull_name(), post.getCustomer().getAvatar()));
         response.setFullAddress(post.getFullAdress());
         response.setCity(post.getCity());
         response.setCounty(post.getCounty());

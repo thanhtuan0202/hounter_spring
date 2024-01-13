@@ -46,11 +46,9 @@ public class PostController {
     public ResponseEntity<?> getAllPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @RequestParam(value = "type", defaultValue = "1") Long type ) {
         try {
-            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, sortBy, sortDir,
+            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "createAt", "desc",
                     Status.active);
             if (response == null) {
                 return ResponseEntity.noContent().build();

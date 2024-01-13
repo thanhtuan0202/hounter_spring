@@ -31,7 +31,8 @@ public class PostResponse {
     private LocalDate createAt;
     private LocalDate expireAt;
     private Long category;
-    private Long customer;
+    private Long cost;
+    private ShortCustomer owner;
     private Status status;
     private BigDecimal latitude;
     private BigDecimal longitude;

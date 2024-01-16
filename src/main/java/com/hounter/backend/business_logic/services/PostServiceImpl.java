@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,10 +70,14 @@ public class PostServiceImpl implements PostService {
     protected EntityManager em;
 
     @Override
-    public PostResponse getPostById(Long postId) {
+    public PostResponse getPostById(Long postId, boolean isUser) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
-            PostResponse response = PostMapping.PostResponseMapping(optionalPost.get());
+            Post post = optionalPost.get();
+            if(isUser && post.getStatus() != Status.active){
+                return null;
+            }
+            PostResponse response = PostMapping.PostResponseMapping(post);
             response.setCost(this.postCostService.getLastCostOfPost(optionalPost.get()).getCost().getId());
             return response;
         }
@@ -186,12 +191,11 @@ public class PostServiceImpl implements PostService {
         } else {
             throw new Exception("No customer found!");
         }
-        Optional<Category> op_category = this.categoryRepository.findById(createPostDTO.getCategory());
-        if (op_category.isPresent()) {
-            Category category = op_category.get();
+        Category category = this.categoryRepository.findByName(createPostDTO.getCategory());
+        if (category != null) {
             post.setCategory(category);
         } else {
-            throw new CategoryNotFoundException("Cannot find category with id " + createPostDTO.getCategory());
+            throw new CategoryNotFoundException("Cannot find category with name " + createPostDTO.getCategory());
         }
         FindPointsAddress.LatLng latLng = this.findPointsAddress.getAddressPoints(createPostDTO.getFullAddress());
         post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
@@ -296,7 +300,6 @@ public class PostServiceImpl implements PostService {
         return null;
     }
 
-
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public boolean changeStatusPost(Long postId, Long userId, ChangeStatusDto changeStatus, boolean isAdmin)
@@ -328,5 +331,32 @@ public class PostServiceImpl implements PostService {
         }
         return false;
     }
-
+    @Override
+    @Transactional(rollbackFor = { Exception.class })
+    public boolean changeStatus_Staff(Long postId, String status, Long staffId){
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            Post post = optionalPost.get();
+            if (post.getStatus().equals(Status.waiting)) {
+                if(status.equals(Status.active.toString())) {
+                    post.setStatus(Status.active);
+                    PostCost postCost = this.postCostService.getLastCostOfPost(post);
+                    post.setUpdateAt(LocalDate.now());
+                    post.setExpireAt(LocalDate.now().plusDays(postCost.getActiveDays()));
+                }
+                else if(status.equals(Status.delete.toString())){
+                    post.setStatus(Status.delete);
+                }
+                else{
+                    return false;
+                }
+                this.postRepository.save(post);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            throw new PostNotFoundException("Cannot find post with id " + postId);
+        }
+    }
 }

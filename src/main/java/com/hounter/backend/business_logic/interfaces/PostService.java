@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PostService {
     //public to all users
-    public PostResponse getPostById(Long postId);
+    public PostResponse getPostById(Long postId, boolean isUser);
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir);
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Status status);
     //user
@@ -26,5 +26,5 @@ public interface PostService {
     //admin
     public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo,Long postId);
     public boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;
-
+    public boolean changeStatus_Staff(Long postId, String status, Long staffId);
 }

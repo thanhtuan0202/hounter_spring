@@ -39,7 +39,7 @@ public class PostMapping {
             post.getCreateAt(),
             post.getExpireAt(),
             post.getCategory().getId(),
-            last.getId(),
+            last.getCost().getName(),
             post.getStatus(),
             lst.get(0).getImageUrl()
         );
@@ -59,7 +59,7 @@ public class PostMapping {
         new_post.setCustomerPhone(create.getCustomerPhone());
         new_post.setCreateAt(LocalDate.now());
         new_post.setUpdateAt(LocalDate.now());
-        new_post.setStatus(Status.active);
+        new_post.setStatus(Status.waiting);
         new_post.setNotes(create.getNote());
         return new_post;
     }

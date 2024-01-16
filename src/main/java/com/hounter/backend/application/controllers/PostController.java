@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/posts")
@@ -59,10 +62,14 @@ public class PostController {
         }
     }
 
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostDetail(@PathVariable("id") Long id) {
         try {
-            PostResponse post = this.postService.getPostById(id);
+            PostResponse post = this.postService.getPostById(id, true);
+            if(post == null) {
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.ok(post);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -89,15 +96,15 @@ public class PostController {
     public ResponseEntity<?> getFilterPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            // @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
+            // @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @Valid @ModelAttribute FilterPostDto filterDto, BindingResult binding) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
             return ResponseEntity.badRequest().body(error_lst);
         }
         try{
-            List<ShortPostResponse> responses = this.postService.filterPost(pageSize, pageNo - 1, sortBy, sortDir, filterDto);
+            List<ShortPostResponse> responses = this.postService.filterPost(pageSize, pageNo - 1, "createAt", "desc", filterDto);
             if (responses == null) {
                 return ResponseEntity.noContent().build();
             }

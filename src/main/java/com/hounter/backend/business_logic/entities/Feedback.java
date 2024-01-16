@@ -21,7 +21,7 @@ public class Feedback {
     private String content;
 
     @Column(name = "create_at", nullable = false)
-    private LocalDate createdAt;
+    private LocalDate createAt;
 
     @ManyToOne
     @JoinColumn(name = "sender_id",referencedColumnName = "id", nullable = false)

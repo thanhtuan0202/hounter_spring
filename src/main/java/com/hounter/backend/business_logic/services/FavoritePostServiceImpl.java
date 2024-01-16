@@ -1,11 +1,13 @@
 package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
+import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.FavoritePost;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
 import com.hounter.backend.business_logic.mapper.FavoriteMapping;
+import com.hounter.backend.business_logic.mapper.PostMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.data_access.repositories.FavoritePostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
@@ -37,22 +39,27 @@ public class FavoritePostServiceImpl implements FavoritePostService {
     private CustomerRepository customerRepository;
 
     @Override
-    public List<FavoriteResponse> getAllFavoritePost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,Long userId) {
+    public List<ShortPostResponse> getAllFavoritePost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,Long userId) {
         Pageable pageable =  PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-        Page<FavoritePost> postLst = this.favoritePostRepository.findAll(pageable);
-        List<FavoriteResponse> responseList = new ArrayList<>();
-        if(!postLst.isEmpty()){
-            for(FavoritePost post: postLst.getContent()){
-                responseList.add(FavoriteMapping.responseMapping(post));
+        Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);
+        if(optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            List<FavoritePost> favoritePosts = this.favoritePostRepository.findByCustomer(customer,pageable);
+            List<ShortPostResponse> responseList = new ArrayList<>();
+            if(favoritePosts.isEmpty()){
+                return null;
+            }
+            for(FavoritePost post: favoritePosts){
+                responseList.add(PostMapping.getShortPostResponse(post.getPost()));
             }
             return responseList;
         }
-        return null;
+        throw new PostNotFoundException("Can't find post with user!" );
     }
 
     @Override
     @Transactional(rollbackFor = { Exception.class })
-    public FavoriteResponse addPostToFavorite(Long userId, Long postId) throws Exception {
+    public boolean addPostToFavorite(Long userId, Long postId) throws Exception {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if(optionalPost.isPresent()) {
             Post post = optionalPost.get();
@@ -63,7 +70,7 @@ public class FavoritePostServiceImpl implements FavoritePostService {
             favoritePost.setCustomer(customer);
             favoritePost.setCreateAt(LocalDate.now());
             this.favoritePostRepository.save(favoritePost);
-            return FavoriteMapping.responseMapping(favoritePost);
+            return true;
         }
         throw new PostNotFoundException("Can't find post with id " + postId);
         
@@ -71,19 +78,22 @@ public class FavoritePostServiceImpl implements FavoritePostService {
 
     @Override
     @Transactional(rollbackFor = { Exception.class })
-    public FavoriteResponse deletePostFromFavorite(Long userId, Long postId) throws Exception{
+    public boolean deletePostFromFavorite(Long userId, Long postId) throws Exception{
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);
         if(optionalPost.isPresent() && optionalCustomer.isPresent()) {
             Post post = optionalPost.get();
             Customer customer = optionalCustomer.get();
             FavoritePost favoritePost = this.favoritePostRepository.findByCustomerAndPost(customer, post);
-            this.favoritePostRepository.delete(favoritePost);
+            if(favoritePost != null) {
+                this.favoritePostRepository.delete(favoritePost);
+                return true;
+            }
         }
         else if(optionalCustomer.isPresent()) {
             throw new PostNotFoundException("Can't find post with id " + postId);
         }
-        throw new IllegalIdentifierException("User not found");
+        return false;
     }
 
 }

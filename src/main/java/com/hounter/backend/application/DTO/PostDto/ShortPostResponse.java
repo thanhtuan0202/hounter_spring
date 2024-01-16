@@ -24,7 +24,7 @@ public class ShortPostResponse {
     private LocalDate createAt;
     private LocalDate expireAt;
     private Long category;
-    private Long cost;
+    private String cost;
     private Status status;
     private String image;
 }

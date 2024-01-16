@@ -30,11 +30,9 @@ public class FeedbackController {
     @GetMapping
     public ResponseEntity<?> getAllFeedback(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir) {
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         try {
-            List<FeedbackResponse> responses = this.feedbackService.getAllFeedback(pageSize, pageNo - 1, sortBy, sortDir);
+            List<FeedbackResponse> responses = this.feedbackService.getAllFeedback(pageSize, pageNo - 1, "createAt", "desc");
             if (responses != null) {
                 return ResponseEntity.ok(responses);
             }
@@ -62,22 +60,22 @@ public class FeedbackController {
     public ResponseEntity<?> deleteFeedbackById(@Valid @PathVariable("id") Long feedbackId){
         return null;
     }
-//    @PostMapping("/{postId}")
-//    public ResponseEntity<?> createFeedback(@Valid @PathVariable("postId") Long postId,@Valid @RequestBody CreateFeedback createFeedback, BindingResult binding){
-//        if(binding.hasErrors()){
-//            List<BindingBadRequest> errors = MappingError.mappingError(binding);
-//            return ResponseEntity.badRequest().body(errors);
-//        }
-//        try{
-//            Long customerId = this.userDetailsService.getCurrentUserDetails().getUserId();
-//            FeedbackResponse response = this.feedbackService.createFeedback(createFeedback,postId,customerId);
-//            return null;
-//        }
-//        catch (PostNotFoundException e){
-//            return new ResponseEntity<>(new ApiResponse<String>(e.getMessage()), HttpStatus.OK);
-//        }
-//        catch (Exception e) {
-//            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+    @PostMapping("/{postId}")
+    public ResponseEntity<?> createFeedback(@Valid @PathVariable("postId") Long postId,@Valid @RequestBody CreateFeedback createFeedback, BindingResult binding){
+        if(binding.hasErrors()){
+            List<BindingBadRequest> errors = MappingError.mappingError(binding);
+            return ResponseEntity.badRequest().body(errors);
+        }
+        try{
+            Long customerId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            FeedbackResponse response = this.feedbackService.createFeedback(createFeedback,postId,customerId);
+            return ResponseEntity.ok(response);
+        }
+        catch (PostNotFoundException e){
+            return new ResponseEntity<>(new ApiResponse<String>(e.getMessage()), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

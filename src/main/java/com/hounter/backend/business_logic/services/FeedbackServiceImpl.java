@@ -81,7 +81,7 @@ public class FeedbackServiceImpl implements FeedbackService{
             Feedback feedback = new Feedback();
             feedback.setCustomer(customer);
             feedback.setPost(post);
-            feedback.setCreatedAt(LocalDate.now());
+            feedback.setCreateAt(LocalDate.now());
             feedback.setContent(createFeedback.getContent());
             Feedback saved = this.feedbackRepository.save(feedback);
             return FeedbackMapping.getResponse(saved);

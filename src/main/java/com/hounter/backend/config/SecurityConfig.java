@@ -48,7 +48,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Requestor-Type","Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -68,11 +68,13 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,"/posts/**").permitAll()
                                 .requestMatchers(HttpMethod.PATCH,"/posts/**").hasRole("USER")
                                  .requestMatchers(HttpMethod.POST,"/posts/**").permitAll()
+
                                 // .requestMatchers(HttpMethod.DELETE,"/posts/**").hasRole("USER")
                                 // .requestMatchers(HttpMethod.PUT,"/posts/**").hasRole("USER")
                                 .requestMatchers("/customers/**").hasRole("USER")
 //                                .requestMatchers("/addresses/**").hasRole("USER")
-                                .requestMatchers("/feedback/**").hasRole("ADMIN")
+                                .requestMatchers("/feedbacks/**").hasRole("ADMIN")
+                                .requestMatchers("/staffs/**").permitAll()
                                 .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

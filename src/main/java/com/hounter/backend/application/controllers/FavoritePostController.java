@@ -2,6 +2,7 @@ package com.hounter.backend.application.controllers;
 
 
 import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
+import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
@@ -32,14 +33,14 @@ public class FavoritePostController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         try {
             Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
-            List<FavoriteResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo - 1, "createAt",
+            List<ShortPostResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo - 1, "createAt",
                     "desc", userId);
             if (responses != null) {
                 return ResponseEntity.ok(responses);
             }
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,11 +48,15 @@ public class FavoritePostController {
     public ResponseEntity<?> addNewPostToFavorite(@Valid @PathVariable("postId") Long postId) {
         try {
             Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
-            this.favoritePostService.addPostToFavorite(userId, postId);
+            boolean res = this.favoritePostService.addPostToFavorite(userId, postId);
+            if(!res){
+                return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             return ResponseEntity.ok("Thêm thành công!");
         } catch (PostNotFoundException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -60,13 +65,17 @@ public class FavoritePostController {
     public ResponseEntity<?> deletePostFromFavorite(@PathVariable("postId") Long postId) {
         try {
             Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
-            this.favoritePostService.addPostToFavorite(userId, postId);
-            return ResponseEntity.ok("Thêm thành công!");
+            boolean res = this.favoritePostService.deletePostFromFavorite(userId, postId);
+            if(res) {
+                return ResponseEntity.ok("Xoá thành công!");
+            }
+            return new ResponseEntity<String>("Can't find post in your favorite list", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (PostNotFoundException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<String>("Can't find post in your favorite list", HttpStatus.OK);
         }catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

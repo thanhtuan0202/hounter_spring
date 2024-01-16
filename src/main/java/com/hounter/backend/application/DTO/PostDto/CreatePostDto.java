@@ -17,8 +17,8 @@ public class CreatePostDto {
     @NotBlank(message = "Không được để trống")
     private String description;
 
-    @NotNull(message = "Field must not be null")
-    private Long category;
+    @NotBlank(message = "Field must not be null")
+    private String category;
 
     @NotNull(message = "Field must not be null")
     private Integer price;

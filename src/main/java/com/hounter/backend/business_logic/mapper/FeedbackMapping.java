@@ -8,7 +8,7 @@ public class FeedbackMapping {
         FeedbackResponse response = new FeedbackResponse();
         response.setId(feedback.getId());
         response.setContent(feedback.getContent());
-        response.setCreate_at(feedback.getCreatedAt());
+        response.setCreate_at(feedback.getCreateAt());
         response.setPost(feedback.getPost().getId());
         response.setSender(feedback.getCustomer().getId());
         return response;

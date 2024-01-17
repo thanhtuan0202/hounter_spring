@@ -2,6 +2,7 @@ package com.hounter.backend.shared.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,7 @@ public class FindPointsAddress {
     }
     @Getter
     @Setter
+    @AllArgsConstructor
     public static class LatLng {
         private double lat;
         private double lng;
@@ -73,7 +75,7 @@ public class FindPointsAddress {
     public LatLng getAddressPoints(String address) throws IOException {
 
         String urlStr = "https://www.mapquestapi.com/geocoding/v1/address?"
-                + "inFormat=kvp&outFormat=json&key=" + this.mapQuestApiKey + "&location="+ URLEncoder.encode(address, StandardCharsets.UTF_8);;
+                + "inFormat=kvp&outFormat=json&key=" + this.mapQuestApiKey + "&location="+ URLEncoder.encode(address, StandardCharsets.UTF_8);
 
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -5,6 +5,7 @@ import com.hounter.backend.application.DTO.AuthDTO;
 import com.hounter.backend.business_logic.entities.Account;
 import com.hounter.backend.business_logic.entities.Customer;
 
+import com.hounter.backend.business_logic.entities.Role;
 import com.hounter.backend.business_logic.interfaces.AccountRoleService;
 import com.hounter.backend.business_logic.interfaces.AccountService;
 import com.hounter.backend.data_access.repositories.AccountRepository;
@@ -20,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -50,7 +48,12 @@ public class AccountServiceImpl implements AccountService {
                     throw new Exception("Tài khoản hiện đang bị khoá. Vui lòng thử lại hoặc liên hệ hỗ trợ!");
                 }
                 String token = JwtUtils.generateToken(currentAccount);
-                return new AuthDTO(currentAccount.getId(),currentAccount.getUsername(), currentAccount.getEmail(),currentAccount.getFull_name(),currentAccount.getAvatar(),token);
+                List<String> role_res = new ArrayList<>();
+                for(Role role : currentAccount.getRoles()){
+                    role_res.add(role.getName());
+                }
+                return new AuthDTO(currentAccount.getId(),currentAccount.getUsername(), currentAccount.getEmail(),
+                        currentAccount.getFull_name(),currentAccount.getAvatar(),role_res,token);
             }
             else{
                 throw new Exception("Thông tin tài khoản hoặc mật khẩu không chính xác.");

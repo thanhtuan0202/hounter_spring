@@ -49,7 +49,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Requestor-Type","Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -63,12 +63,12 @@ public class SecurityConfig {
                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/categories/**").permitAll()
-                                .requestMatchers("/posts/find_address").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/posts/{id}/feedbacks").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET,"/posts/**").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/posts/find_address").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/posts/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.PATCH,"/posts/**").hasRole("USER")
-                                 .requestMatchers(HttpMethod.POST,"/posts/**").permitAll()
-
+                                .requestMatchers("favorite/**").hasRole("USER")
                                 // .requestMatchers(HttpMethod.DELETE,"/posts/**").hasRole("USER")
                                 // .requestMatchers(HttpMethod.PUT,"/posts/**").hasRole("USER")
                                 .requestMatchers("/customers/**").hasRole("USER")

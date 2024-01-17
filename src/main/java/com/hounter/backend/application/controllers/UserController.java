@@ -66,7 +66,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "status", required = false,defaultValue = "") String status,
             @RequestParam(value = "category", required = false, defaultValue = "Nhà trọ") String category,
             @RequestParam(value = "cost", required = false, defaultValue = "0") Long cost,
             @RequestParam(value = "beginDate", required = false,defaultValue = "") String beginDate,

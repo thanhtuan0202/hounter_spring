@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/favorite-posts")
+@RequestMapping("/favorite")
 public class FavoritePostController {
     private final CustomUserDetailServiceImpl customUserDetailService;
     @Autowired

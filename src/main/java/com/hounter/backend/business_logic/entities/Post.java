@@ -42,7 +42,7 @@ public class Post {
     @Column(name = "customer_phone",length = 11, nullable = false)
     private String customerPhone;
 
-    @Column(name = "note", nullable = false)
+    @Column(name = "note")
     private String notes;
 
     @Column(name = "status", nullable = false)

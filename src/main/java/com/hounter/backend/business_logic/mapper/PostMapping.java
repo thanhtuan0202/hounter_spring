@@ -60,7 +60,9 @@ public class PostMapping {
         new_post.setCreateAt(LocalDate.now());
         new_post.setUpdateAt(LocalDate.now());
         new_post.setStatus(Status.waiting);
-        new_post.setNotes(create.getNote());
+        if(create.getNote() != null && !create.getNote().isBlank()){
+            new_post.setNotes(create.getNote());
+        }
         return new_post;
     }
 

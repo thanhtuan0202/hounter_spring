@@ -17,6 +17,7 @@ import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 
+import com.hounter.backend.shared.utils.FindPointMapbox;
 import com.hounter.backend.shared.utils.FindPointsAddress;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,6 +68,8 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private FindPointsAddress findPointsAddress;
 
+    @Autowired
+    private FindPointMapbox findPointMapbox;
     @PersistenceContext
     protected EntityManager em;
 
@@ -74,7 +78,7 @@ public class PostServiceImpl implements PostService {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
-            if(isUser && post.getStatus() != Status.active){
+            if(isUser && post.getStatus() == Status.waiting){
                 return null;
             }
             PostResponse response = PostMapping.PostResponseMapping(post);
@@ -143,19 +147,19 @@ public class PostServiceImpl implements PostService {
                                                      String startDate,String endDate){
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Post> cq = cb.createQuery(Post.class);
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Root<Post> post = cq.from(Post.class);
         List<Predicate> predicates = new ArrayList<>();
-
+        predicates.add(cb.equal(post.get("customer"), customer));
         if (category_name != null) {
             Category category = this.categoryRepository.findByName(category_name);
             predicates.add(cb.equal(post.get("category"), category));
         }
         if(!Objects.equals(startDate, "")) {
-            predicates.add(cb.greaterThanOrEqualTo(post.get("createAt"), startDate));
+            predicates.add(cb.greaterThanOrEqualTo(post.get("createAt"), LocalDate.parse(startDate, formatter)));
         }
         if(!Objects.equals(endDate, "")) {
-            predicates.add(cb.lessThanOrEqualTo(post.get("createAt"), endDate));
+            predicates.add(cb.lessThanOrEqualTo(post.get("createAt"), LocalDate.parse(endDate, formatter)));
         }
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
@@ -197,7 +201,7 @@ public class PostServiceImpl implements PostService {
         } else {
             throw new CategoryNotFoundException("Cannot find category with name " + createPostDTO.getCategory());
         }
-        FindPointsAddress.LatLng latLng = this.findPointsAddress.getAddressPoints(createPostDTO.getFullAddress());
+        FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(createPostDTO.getFullAddress());
         post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
         post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
         Post saved_post = this.postRepository.save(post);

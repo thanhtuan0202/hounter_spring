@@ -1,5 +1,6 @@
 package com.hounter.backend.application.DTO.FeedbackDto;
 
+import com.hounter.backend.application.DTO.PostDto.ShortCustomer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,6 @@ public class FeedbackResponse {
     private Long id;
     private String content;
     private Long post;
-    private Long sender;
+    private ShortCustomer sender;
     private LocalDate create_at;
 }

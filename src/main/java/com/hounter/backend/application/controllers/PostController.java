@@ -14,6 +14,7 @@ import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
+import com.hounter.backend.shared.utils.FindPointMapbox;
 import com.hounter.backend.shared.utils.FindPointsAddress;
 import com.hounter.backend.shared.utils.MappingError;
 
@@ -40,9 +41,11 @@ public class PostController {
 
     private final CustomUserDetailServiceImpl userDetailsService;
     private final FindPointsAddress findPointsAddress;
-    public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress) {
+    private final FindPointMapbox findPointMapbox;
+    public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress, FindPointMapbox findPointMapbox) {
         this.userDetailsService = userDetailsService;
         this.findPointsAddress = findPointsAddress;
+        this.findPointMapbox = findPointMapbox;
     }
 
     @GetMapping()
@@ -228,6 +231,7 @@ public class PostController {
 
     @PostMapping("/find_address")
     public ResponseEntity<?> findAddress(@RequestBody String address) throws IOException {
-        return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
+//        return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
+        return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
     }
 }

@@ -25,6 +25,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import java.util.ArrayList;
 
 @Service
+@Slf4j
 public class PostServiceImpl implements PostService {
     @Autowired
     private PostRepository postRepository;
@@ -208,7 +210,7 @@ public class PostServiceImpl implements PostService {
         PostCost postCost = this.postCostService.enrollPostToCost(saved_post, createPostDTO.getCost(),
                 createPostDTO.getDays());
 
-        this.paymentService.createPayment(postCost, userId);
+        this.paymentService.savePaymentOfPost(postCost, userId);
         this.postImageService.storeImageOfPost(saved_post, createPostDTO.getImageUrls());
         return PostMapping.PostResponseMapping1(saved_post);
     }
@@ -296,6 +298,13 @@ public class PostServiceImpl implements PostService {
         if (posts != null) {
             return this.mapListOfPost(posts);
         }
+        return null;
+    }
+    @Override
+    public List<ShortPostResponse> searchOnMap(float latitude, float longitude, Integer pageSize, Integer pageNo){
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "create_at"));
+        List<Post> postResult = this.postRepository.findPostNearYou(latitude,longitude,pageable);
+        log.info("Enter search on map and return " + postResult.size() + " row");
         return null;
     }
 

@@ -17,6 +17,7 @@ public interface PostService {
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Customer customer);
     public List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, Customer customer, Status status);
     public List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer page,Customer customer,String category,Long cost,String startDate,String endDate);
+    public List<ShortPostResponse> searchOnMap(float latitude, float longitude, Integer pageSize, Integer pageNo);
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception;
     public PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
     public PostResponse deletePost(Long id, Long userId);

@@ -23,25 +23,25 @@ public class Account {
     @Column(name = "full_name", nullable = false)
     private String full_name;
 
-    @Column(name = "username", unique = true)
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
 
     @Column(name = "email")
     private String email;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "avatar")
     private String avatar;
 
-    @Column(name = "is_active")
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    @Column(name = "create_at")
+    @Column(name = "create_at", nullable = false)
     private LocalDate createAt;
 
-    @Column(name = "update_at")
+    @Column(name = "update_at", nullable = false)
     private LocalDate updateAt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

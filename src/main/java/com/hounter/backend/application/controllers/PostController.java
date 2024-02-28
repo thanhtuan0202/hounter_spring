@@ -21,6 +21,7 @@ import com.hounter.backend.shared.utils.MappingError;
 import jakarta.validation.Valid;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/posts")
+@Log4j2
 public class PostController {
     @Autowired
     private PostService postService;
@@ -104,6 +106,7 @@ public class PostController {
             @Valid @ModelAttribute FilterPostDto filterDto, BindingResult binding) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
+            log.error("Error mapping request " + binding);
             return ResponseEntity.badRequest().body(error_lst);
         }
         try{
@@ -111,9 +114,11 @@ public class PostController {
             if (responses == null) {
                 return ResponseEntity.noContent().build();
             }
+            log.info("Filter post response returned " + responses.size());
             return ResponseEntity.ok(responses);
         }
         catch(Exception e){
+            log.error("Error: " + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -128,6 +133,16 @@ public class PostController {
         return ResponseEntity.ok("go to search controller" + searchValue);
     }
 
+    @GetMapping("/search-on-map")
+    public ResponseEntity<?> SearchOnMap(
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "latitude") float latitude,
+            @RequestParam(value = "longitude") float longitude
+    ){
+        List<ShortPostResponse> responses = this.postService.searchOnMap(latitude, longitude, pageSize, pageNo - 1);
+        return ResponseEntity.ok("Ok");
+    }
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPost, BindingResult binding) {
         if (binding.hasErrors()) {

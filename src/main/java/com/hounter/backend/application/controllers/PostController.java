@@ -20,7 +20,7 @@ import com.hounter.backend.shared.utils.MappingError;
 
 import jakarta.validation.Valid;
 
-import lombok.Getter;
+
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,11 +42,11 @@ public class PostController {
     private PostService postService;
 
     private final CustomUserDetailServiceImpl userDetailsService;
-    private final FindPointsAddress findPointsAddress;
+    // private final FindPointsAddress findPointsAddress;
     private final FindPointMapbox findPointMapbox;
     public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress, FindPointMapbox findPointMapbox) {
         this.userDetailsService = userDetailsService;
-        this.findPointsAddress = findPointsAddress;
+        // this.findPointsAddress = findPointsAddress;
         this.findPointMapbox = findPointMapbox;
     }
 

@@ -1,14 +1,12 @@
 package com.hounter.backend.business_logic.entities;
 
+import com.hounter.backend.shared.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-
-import com.hounter.backend.shared.enums.PaymentStatus;
 
 @Entity
 @Table(name = "payments")
@@ -20,6 +18,12 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "payment_info")
+    private String paymentInfo;
+
+    @Column(name = "post_num")
+    private Long postNum;
 
     @Column(name = "status", nullable = false)
     private PaymentStatus status = PaymentStatus.waiting;
@@ -39,7 +43,7 @@ public class Payment {
     @Column(name = "payment_method")
     private String paymentMethod;
 
-    @Column(name = "payment_id")
+    @Column(name = "transaction_id")
     private String paymentId;
 
     @OneToOne

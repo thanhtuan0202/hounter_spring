@@ -1,34 +1,26 @@
 package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
-import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.FavoritePost;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
 import com.hounter.backend.business_logic.mapper.FavoriteMapping;
-import com.hounter.backend.business_logic.mapper.PostMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.data_access.repositories.FavoritePostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
-
-import jakarta.el.ELException;
-
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
-import java.time.LocalDate;
 @Service
 public class FavoritePostServiceImpl implements FavoritePostService {
     @Autowired
@@ -39,18 +31,18 @@ public class FavoritePostServiceImpl implements FavoritePostService {
     private CustomerRepository customerRepository;
 
     @Override
-    public List<ShortPostResponse> getAllFavoritePost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,Long userId) {
+    public List<FavoriteResponse> getAllFavoritePost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,Long userId) {
         Pageable pageable =  PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Optional<Customer> optionalCustomer = this.customerRepository.findById(userId);
         if(optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
             List<FavoritePost> favoritePosts = this.favoritePostRepository.findByCustomer(customer,pageable);
-            List<ShortPostResponse> responseList = new ArrayList<>();
+            List<FavoriteResponse> responseList = new ArrayList<>();
             if(favoritePosts.isEmpty()){
                 return null;
             }
             for(FavoritePost post: favoritePosts){
-                responseList.add(PostMapping.getShortPostResponse(post.getPost()));
+                responseList.add(FavoriteMapping.responseMapping(post));
             }
             return responseList;
         }

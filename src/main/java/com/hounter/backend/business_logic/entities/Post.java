@@ -92,8 +92,5 @@ public class Post {
     private Set<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "post")
-    private Set<PostCost> postCosts;
-
-    @OneToMany(mappedBy = "post")
     private Set<PostImage> postImages;
 }

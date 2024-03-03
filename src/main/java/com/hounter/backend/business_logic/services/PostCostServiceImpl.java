@@ -39,7 +39,6 @@ public class PostCostServiceImpl implements PostCostService {
             Cost cost = op_cost.get();
             PostCost cost_post = new PostCost();
             cost_post.setCost(cost);
-            cost_post.setPost(post);
             cost_post.setActiveDays(days);
             cost_post.setDate(LocalDate.now());
             PostCost saved = this.postCostRepository.save(cost_post);
@@ -57,7 +56,6 @@ public class PostCostServiceImpl implements PostCostService {
             Cost cost = op_cost.get();
             PostCost cost_post = new PostCost();
             cost_post.setCost(cost);
-            cost_post.setPost(post);
             cost_post.setActiveDays(days);
             cost_post.setDate(LocalDate.now());
             return this.postCostRepository.save(cost_post);
@@ -68,9 +66,8 @@ public class PostCostServiceImpl implements PostCostService {
     }
 
     @Override
-    public PostCost getLastCostOfPost(Post post) {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.fromString("desc"), "date"));
-        List<PostCost> postCosts = this.postCostRepository.findByPost(post,pageable);
-        return postCosts.get(0);
+    public PostCost findByPost(Post post) {
+        return this.postCostRepository.findByPost(post);
     }
+
 }

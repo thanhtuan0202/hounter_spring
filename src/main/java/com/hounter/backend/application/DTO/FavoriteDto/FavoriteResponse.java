@@ -18,6 +18,5 @@ public class FavoriteResponse {
     private LocalDate createAt;
     private LocalDate expireAt;
     private Long category;
-    private Long cost;
     private String image;
 }  

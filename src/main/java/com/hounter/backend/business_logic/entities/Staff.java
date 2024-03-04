@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -24,7 +25,7 @@ public class Staff extends Account {
     private String address;
 
     @Column(name = "start_date")
-    private String startDate;
+    private LocalDate startDate;
     
     @OneToMany(mappedBy = "staff")
     private Set<Report> reports;

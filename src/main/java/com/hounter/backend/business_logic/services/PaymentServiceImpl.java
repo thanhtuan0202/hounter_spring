@@ -2,15 +2,19 @@ package com.hounter.backend.business_logic.services;
 
 import com.google.gson.JsonObject;
 import com.hounter.backend.application.DTO.PaymentDTO.CreatePaymentDTO;
-import com.hounter.backend.business_logic.entities.Cost;
-import com.hounter.backend.business_logic.entities.Payment;
-import com.hounter.backend.business_logic.entities.PostCost;
+import com.hounter.backend.business_logic.entities.*;
 import com.hounter.backend.business_logic.interfaces.PaymentService;
 import com.hounter.backend.config.VnpayConfig;
 import com.hounter.backend.data_access.repositories.PaymentRepository;
+import com.hounter.backend.data_access.repositories.PostCostRepository;
+import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 
+import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -28,7 +33,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
     private final String serverAddress = Inet4Address.getLocalHost().getHostAddress();
-
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private PostCostRepository postCostRepository;
     public PaymentServiceImpl() throws UnknownHostException {
     }
 
@@ -36,7 +44,6 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(rollbackFor = {Exception.class})
     public void savePaymentOfPost(PostCost postCost, Long userId) {
         Payment payment = new Payment();
-        
         payment.setCreateAt(postCost.getDate());
         payment.setExpireAt(postCost.getDate().plusDays(7));
         Cost cost = postCost.getCost();
@@ -51,16 +58,40 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setTotalPrice(total_price);
         payment.setPostCost(postCost);
         payment.setStatus(PaymentStatus.waiting);
+        payment.setCustomer(postCost.getPost().getCustomer());
+        payment.setPaymentInfo("Thanh toan cho bai dang: " + postCost.getPost().getId());
+        payment.setPostNum(postCost.getPost().getId());
         Payment saved = this.paymentRepository.save(payment);
         
     }
 
     @Override
-    public CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr) throws IOException {
+    public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount) {
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
+        if(optionalPost.isEmpty()){
+            throw new PostNotFoundException("Post not found.");
+        }
+        Post post = optionalPost.get();
+        Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post));
+        payment.setPaymentDate(LocalDate.now());
+        payment.setStatus(PaymentStatus.success);
+        payment.setPaymentId(transactionNo);
+        payment.setTotalPrice(amount / 100);
+        payment.setPaymentMethod(bankCode);
+        this.paymentRepository.save(payment);
+    }
+
+    @Override
+    public CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr, Long postId, Long amount, Long userId) throws IOException {
+        Optional<Post> optionalPost = this.postRepository.findById(postId);
+        if(optionalPost.isEmpty()){
+            throw new PostNotFoundException("Post not found.");
+        }
+        Post post = optionalPost.get();
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        long amount = 1000000;
+        long vnp_amount = amount == 0 ? post.getPrice() * 100 : amount * 100;
         String bankCode = "NCB";
 
         String vnp_TxnRef = VnpayConfig.getRandomNumber(8);
@@ -72,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(amount));
+        vnp_Params.put("vnp_Amount", String.valueOf(vnp_amount));
         vnp_Params.put("vnp_CurrCode", "VND");
 
         vnp_Params.put("vnp_BankCode", bankCode);
@@ -101,15 +132,15 @@ public class PaymentServiceImpl implements PaymentService {
         while (itr.hasNext()) {
             String fieldName = (String) itr.next();
             String fieldValue = (String) vnp_Params.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
-                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
                 //Build query
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
                 query.append('=');
-                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
                 if (itr.hasNext()) {
                     query.append('&');
                     hashData.append('&');
@@ -178,5 +209,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
         in.close();
         System.out.println(response.toString());
+    }
+
+    @Override
+    public List<Payment> getListPaymentOfCustomer(Customer customer, Integer pageNo, Integer pageSize) {
+        Pageable pageable =  PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "createAt"));
+        return this.paymentRepository.findByCustomer(customer, pageable);
     }
 }

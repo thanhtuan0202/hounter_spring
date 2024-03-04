@@ -60,7 +60,7 @@ public class FeedbackServiceImpl implements FeedbackService{
     }
 
     @Override
-    public List<FeedbackResponse> getAllFeedbackByPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, Long postId) {
+    public List<FeedbackResponse> getFeedbackByPost(Long postId, Integer pageSize, Integer pageNo, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Feedback> feedbacks = this.feedbackRepository.findByPost_id(postId, pageable);
         List<FeedbackResponse> responses = new ArrayList<FeedbackResponse>();
@@ -91,4 +91,5 @@ public class FeedbackServiceImpl implements FeedbackService{
         }
         return null;
     }
+
 }

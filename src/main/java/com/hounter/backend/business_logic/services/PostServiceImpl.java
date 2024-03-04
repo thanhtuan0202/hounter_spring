@@ -84,7 +84,7 @@ public class PostServiceImpl implements PostService {
                 return null;
             }
             PostResponse response = PostMapping.PostResponseMapping(post);
-            response.setCost(this.postCostService.getLastCostOfPost(optionalPost.get()).getCost().getId());
+            response.setCost(this.postCostService.findByPost(post).getCost().getId());
             return response;
         }
         throw new PostNotFoundException("Cannot find post with id = " + postId);
@@ -94,7 +94,7 @@ public class PostServiceImpl implements PostService {
         List<ShortPostResponse> responses = new ArrayList<ShortPostResponse>();
         if (!posts.isEmpty()) {
             for (Post post : posts) {
-                responses.add(PostMapping.getShortPostResponse(post));
+                responses.add(PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post)));
             }
             return responses;
         } else {
@@ -119,7 +119,7 @@ public class PostServiceImpl implements PostService {
         if (!posts.isEmpty()) {
             List<Post> postList = posts.getContent();
             for (Post post : postList) {
-                responses.add(PostMapping.getShortPostResponse(post));
+                responses.add(PostMapping.getShortPostResponse(post,this.postCostService.findByPost(post)));
             }
             return responses;
         } else {
@@ -172,8 +172,8 @@ public class PostServiceImpl implements PostService {
             if(cost_id != 0){
                 List<ShortPostResponse> responses = new ArrayList<>();
                 for (Post item : posts){
-                    if(this.postCostService.getLastCostOfPost(item).getCost().getId().equals(cost_id)){
-                        responses.add(PostMapping.getShortPostResponse(item));
+                    if(this.postCostService.findByPost(item).getCost().getId().equals(cost_id)){
+                        responses.add(PostMapping.getShortPostResponse(item,this.postCostService.findByPost(item)));
                     }
                 }
                 return responses;
@@ -184,7 +184,7 @@ public class PostServiceImpl implements PostService {
     }
     @Override
     public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo, Long postId) {
-        return this.feedbackService.getAllFeedbackByPost(pageSize, pageNo, "createAt", "desc", postId);
+        return this.feedbackService.getFeedbackByPost(postId,pageSize, pageNo, "createAt", "desc");
     }
 
     @Override
@@ -351,9 +351,9 @@ public class PostServiceImpl implements PostService {
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             if (post.getStatus().equals(Status.waiting)) {
+                PostCost postCost = this.postCostService.findByPost(post);
                 if(status.equals(Status.active.toString())) {
                     post.setStatus(Status.active);
-                    PostCost postCost = this.postCostService.getLastCostOfPost(post);
                     post.setUpdateAt(LocalDate.now());
                     post.setExpireAt(LocalDate.now().plusDays(postCost.getActiveDays()));
                 }

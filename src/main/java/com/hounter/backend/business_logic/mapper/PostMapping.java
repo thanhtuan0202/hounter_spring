@@ -17,14 +17,7 @@ import com.hounter.backend.business_logic.entities.PostImage;
 import com.hounter.backend.shared.enums.Status;
 
 public class PostMapping {
-    public static ShortPostResponse getShortPostResponse(Post post) {
-        Set<PostCost> costs = post.getPostCosts();
-        Iterator<PostCost> it = costs.iterator();
-        PostCost last = new PostCost();
-        while (it.hasNext()) {
-            last = it.next();
-        }
-
+    public static ShortPostResponse getShortPostResponse(Post post, PostCost cost) {
         Set<PostImage> images = post.getPostImages();
         List<PostImage> lst = new ArrayList<>(images);
         
@@ -39,7 +32,7 @@ public class PostMapping {
             post.getCreateAt(),
             post.getExpireAt(),
             post.getCategory().getId(),
-            last.getCost().getName(),
+            cost.getCost().getName(),
             post.getStatus(),
             lst.get(0).getImageUrl()
         );

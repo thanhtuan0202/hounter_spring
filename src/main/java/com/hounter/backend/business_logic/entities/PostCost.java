@@ -24,7 +24,7 @@ public class PostCost {
     @Column(name = "active_days", nullable = false)
     private Integer activeDays;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id",nullable = false)
     private Post post;
 

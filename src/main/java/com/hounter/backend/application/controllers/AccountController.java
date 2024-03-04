@@ -1,22 +1,18 @@
 package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.AccountDTO.ChangePasswordDTO;
-import com.hounter.backend.business_logic.entities.Account;
 import com.hounter.backend.business_logic.services.AccountServiceImpl;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.exceptions.ConfirmPasswordNotMatch;
 import com.hounter.backend.shared.utils.MappingError;
-
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 import java.util.List;
 
 
@@ -33,8 +29,15 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<Set<Account>> getAllAccounts(){
+    public ResponseEntity<?> getAllAccounts(){
         // Set<AccountResponse> result = accountService.getAllAccounts();
+        return null;
+    }
+    @GetMapping("/{accountId}")
+    public ResponseEntity<?> getAccountInfo(
+            @PathVariable("accountId") Long accountId
+    ){
+
         return null;
     }
     @PostMapping("/{account_id}")

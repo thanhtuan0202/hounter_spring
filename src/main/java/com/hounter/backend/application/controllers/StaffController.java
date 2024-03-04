@@ -1,7 +1,5 @@
 package com.hounter.backend.application.controllers;
 
-import com.hounter.backend.application.DTO.ApiResponse.ApiResponse;
-import com.hounter.backend.application.DTO.CustomerDTO.CustomerResponseDTO;
 import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
@@ -9,14 +7,13 @@ import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.interfaces.StaffService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.enums.Status;
-
-import java.util.List;
-
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/staffs")
@@ -33,18 +30,14 @@ public class StaffController {
         this.userDetailsService = userDetailsService;
     }
 
-    @GetMapping()
-    public ResponseEntity<?> getListStaff(
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo
-            // @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            // @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
-    ){
-        return null;
-    }
-    @GetMapping("/{staffId}")
-    public ResponseEntity<?> getStaffInfo(@PathVariable("staffId") Long staffId) {
-        return null;
+    @GetMapping("/get-self-infomation")
+    public ResponseEntity<?> getStaffInfo() {
+        try {
+            Long staffId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            return ResponseEntity.ok(this.staffService.getStaffInfoById(staffId));
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/posts")
@@ -111,9 +104,5 @@ public class StaffController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-    @DeleteMapping("/{staffId}")
-    public ResponseEntity<?> deleteStaff(@PathVariable("staffId") Long staffId){
-        return null;
     }
 }

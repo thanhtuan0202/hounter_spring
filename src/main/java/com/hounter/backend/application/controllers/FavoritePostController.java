@@ -2,7 +2,6 @@ package com.hounter.backend.application.controllers;
 
 
 import com.hounter.backend.application.DTO.FavoriteDto.FavoriteResponse;
-import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.interfaces.FavoritePostService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
@@ -33,7 +32,7 @@ public class FavoritePostController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         try {
             Long userId = this.customUserDetailService.getCurrentUserDetails().getUserId();
-            List<ShortPostResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo - 1, "createAt",
+            List<FavoriteResponse> responses = this.favoritePostService.getAllFavoritePost(pageSize, pageNo - 1, "createAt",
                     "desc", userId);
             if (responses != null) {
                 return ResponseEntity.ok(responses);

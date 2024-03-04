@@ -305,7 +305,11 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "create_at"));
         List<Post> postResult = this.postRepository.findPostNearYou(latitude,longitude,pageable);
         log.info("Enter search on map and return " + postResult.size() + " row");
-        return null;
+        List<ShortPostResponse> responses = new ArrayList<ShortPostResponse>();
+        for(Post post : postResult){
+            responses.add(PostMapping.getShortPostResponse(post,this.postCostService.findByPost(post)));
+        }
+        return responses;
     }
 
     @Override

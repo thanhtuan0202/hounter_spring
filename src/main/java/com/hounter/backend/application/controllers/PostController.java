@@ -3,11 +3,7 @@ package com.hounter.backend.application.controllers;
 import com.hounter.backend.application.DTO.ApiResponse.ApiResponse;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
-import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
-import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
-import com.hounter.backend.application.DTO.PostDto.FilterPostDto;
-import com.hounter.backend.application.DTO.PostDto.PostResponse;
-import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
+import com.hounter.backend.application.DTO.PostDto.*;
 import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.binding.BindingBadRequest;
@@ -17,10 +13,7 @@ import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import com.hounter.backend.shared.utils.FindPointMapbox;
 import com.hounter.backend.shared.utils.FindPointsAddress;
 import com.hounter.backend.shared.utils.MappingError;
-
 import jakarta.validation.Valid;
-
-
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,8 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -140,8 +131,13 @@ public class PostController {
             @RequestParam(value = "latitude") float latitude,
             @RequestParam(value = "longitude") float longitude
     ){
-        List<ShortPostResponse> responses = this.postService.searchOnMap(latitude, longitude, pageSize, pageNo - 1);
-        return ResponseEntity.ok("Ok");
+        try {
+            List<ShortPostResponse> responses = this.postService.searchOnMap(latitude, longitude, pageSize, pageNo - 1);
+            return ResponseEntity.ok(responses);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPost, BindingResult binding) {

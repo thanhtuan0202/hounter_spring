@@ -4,7 +4,7 @@ import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.entities.PostCost;
 
 public interface PostCostService {
-    public void enrollPostToCost(Long post_id, Long cost_id, Integer days);
-    public PostCost enrollPostToCost(Post post, Long cost_id, Integer days);
-    public PostCost findByPost(Post post);
+    void enrollPostToCost(Long post_id, Long cost_id, Integer days);
+    PostCost enrollPostToCost(Post post, Long cost_id, Integer days);
+    PostCost findByPost(Post post);
 }

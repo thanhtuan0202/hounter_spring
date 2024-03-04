@@ -10,10 +10,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface PaymentService {
-    public void savePaymentOfPost(PostCost postCost, Long userId);
-    public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount);
-    public CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr, Long postId, Long amount, Long userId) throws IOException;
-    public void getPaymentInfo(String orderId, String transDate, String xForwardedFor, String remoteAddr) throws IOException;
-    public List<Payment> getListPaymentOfCustomer(Customer customer, Integer pageNo, Integer pageSize);
+    void savePaymentOfPost(PostCost postCost, Long userId);
+    void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount);
+    CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr, Long postId, Long amount, Long userId) throws IOException;
+    void getPaymentInfo(String orderId, String transDate, String xForwardedFor, String remoteAddr) throws IOException;
+    List<Payment> getListPaymentOfCustomer(Customer customer, Integer pageNo, Integer pageSize);
     
 }

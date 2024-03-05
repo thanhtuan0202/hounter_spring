@@ -9,4 +9,5 @@ public interface FeedbackService {
     List<FeedbackResponse> getFeedbackByPost(Long postId, Integer pageSize, Integer pageNo, String sortBy, String sortDir);
     FeedbackResponse getFeedbackById(Long id);
     FeedbackResponse createFeedback(CreateFeedback createFeedback, Long postId, Long userId);
+    Boolean deleteFeedbackById(Long id);
 }

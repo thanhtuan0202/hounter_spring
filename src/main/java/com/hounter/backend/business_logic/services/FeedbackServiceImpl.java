@@ -9,14 +9,7 @@ import com.hounter.backend.business_logic.interfaces.FeedbackService;
 import com.hounter.backend.business_logic.mapper.FeedbackMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.data_access.repositories.FeedbackRepository;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.hounter.backend.data_access.repositories.PostRepository;
-import com.hounter.backend.shared.exceptions.NotFoundException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService{
@@ -90,6 +88,16 @@ public class FeedbackServiceImpl implements FeedbackService{
             throw new PostNotFoundException("Can't find post with id " + postId);
         }
         return null;
+    }
+
+    @Override
+    public Boolean deleteFeedbackById(Long id) {
+        Optional<Feedback> optionalFeedback = this.feedbackRepository.findById(id);
+        if(optionalFeedback.isPresent()){
+            this.feedbackRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
 }

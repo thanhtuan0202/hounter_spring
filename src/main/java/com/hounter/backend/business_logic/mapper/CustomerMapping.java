@@ -30,7 +30,7 @@ public class CustomerMapping {
         customerRes.setNumOfPost(customer.getPosts().size());
         Integer total = 0;
         for(Payment payment: customer.getPayments()){
-            if(payment.getStatus().equals(PaymentStatus.success)){
+            if(payment.getStatus().equals(PaymentStatus.COMPLETE)){
                 total += payment.getTotalPrice();
             }
         }

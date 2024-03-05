@@ -26,7 +26,7 @@ public class Payment {
     private Long postNum;
 
     @Column(name = "status", nullable = false)
-    private PaymentStatus status = PaymentStatus.waiting;
+    private PaymentStatus status = PaymentStatus.PENDING;
 
     @Column(name = "total_price",nullable = false)
     private Integer totalPrice;

@@ -2,21 +2,22 @@ package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.CustomerDTO.CustomerResponseDTO;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
+import com.hounter.backend.application.DTO.PaymentDTO.PaymentResDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.interfaces.CustomerService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.shared.binding.BindingBadRequest;
+import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 import com.hounter.backend.shared.utils.MappingError;
-
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -31,15 +32,6 @@ public class UserController {
         this.userDetailsService = userDetailsService;
     }
 
-    @GetMapping()
-    public ResponseEntity<?> getListCustomer(
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
-    ){
-        return null;
-    }
     @GetMapping("/get_self_information")
     public ResponseEntity<?> getSelfUserInfo() {
         try {
@@ -51,7 +43,7 @@ public class UserController {
         }
     }
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getUserInfo() {
+    public ResponseEntity<?> getUserInfo(@PathVariable String userId) {
         try {
             Long user_id = this.userDetailsService.getCurrentUserDetails().getUserId();
             CustomerResponseDTO response = this.userService.getCustomerInfo(user_id);
@@ -83,17 +75,44 @@ public class UserController {
                 return ResponseEntity.ok(response);
             }
         } catch (NotFoundException e) {
-            return new ResponseEntity<String>(e.getMessage(), e.getStatus());
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
 
     @GetMapping("/{userId}/payments")
-    public ResponseEntity<?> getPaymentList() {
-        return ResponseEntity.ok("PaymentList");
+    public ResponseEntity<?> getPaymentList(@PathVariable("userId") Long userId,
+                                            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+                                            @RequestParam(value = "status", required = false) PaymentStatus status,
+                                            @RequestParam(value = "fromDate", required = false) String fromDate,
+                                            @RequestParam(value = "toDate", required = false) String toDate,
+                                            @RequestParam(value = "transactionId", required = false) String transactionId,
+                                            @RequestParam(value = "postNum", required = false) Long postNum) {
+        try{
+            Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            if(!Objects.equals(tokenId, userId)){
+                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+            }
+            List<PaymentResDTO> response = this.userService.getPaymentOfCustomer(fromDate, toDate, status, transactionId, userId, postNum, pageNo - 1, pageSize);
+            if (response == null) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.ok(response);
+            }
+        }
+        catch (DateTimeParseException e){
+            return new ResponseEntity<>("Invalid date format. Date must be in the format YYYY-MM-DD", HttpStatus.BAD_REQUEST);
+        }
+        catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{userId}/balances")
-    public ResponseEntity<?> getBalanceHistory() {
+    public ResponseEntity<?> getBalanceHistory(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok("Balance of user");
     }
 

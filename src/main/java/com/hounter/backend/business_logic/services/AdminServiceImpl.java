@@ -10,21 +10,15 @@ import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.entities.Staff;
 import com.hounter.backend.business_logic.interfaces.AccountRoleService;
 import com.hounter.backend.business_logic.interfaces.AdminService;
+import com.hounter.backend.business_logic.interfaces.PaymentService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
-import com.hounter.backend.data_access.repositories.PaymentRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.data_access.repositories.StaffRepository;
+import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,9 +47,8 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private AccountRoleService accountRoleService;
     @Autowired
-    private PaymentRepository paymentRepository;
-    @PersistenceContext
-    protected EntityManager em;
+    private PaymentService paymentService;
+
     private final PasswordEncoder passwordEncoder;
 
     public AdminServiceImpl(PasswordEncoder passwordEncoder) {
@@ -161,41 +153,11 @@ public class AdminServiceImpl implements AdminService {
         return true;
     }
     @Override
-    public List<PaymentResAdminDTO> getPaymentsAdmin(String fromDate, String toDate, Status status, String transactionId, 
-                                                        Long customerId, Long postNum, Integer pageNo, Integer pageSize){
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        Root<Payment> paymenRoot = cq.from(Payment.class);
-        List<Predicate> predicates = new ArrayList<>();
-        if(fromDate != null){
-            LocalDate from = LocalDate.parse(fromDate, formatter);
-            predicates.add(cb.greaterThanOrEqualTo(paymenRoot.get("createAt"), from));
-        }
-        if(toDate != null){
-            LocalDate to = LocalDate.parse(toDate, formatter);
-            predicates.add(cb.lessThanOrEqualTo(paymenRoot.get("createAt"), to));
-        }
-        if(status != null){
-            predicates.add(cb.equal(paymenRoot.get("status"), status));
-        }
-        if(transactionId != null){
-            predicates.add(cb.equal(paymenRoot.get("paymentId"), transactionId));
-        }
-        if(customerId != null){
-
-            predicates.add(cb.equal(paymenRoot.get("customer").get("id"), customerId));
-        }
-        if (postNum != null) {
-            predicates.add(cb.equal(paymenRoot.get("postNum"), postNum));
-        }
-        cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.desc(paymenRoot.get("createAt")));
-        List<Payment> paymentList = em.createQuery(cq).setMaxResults(pageSize)
-                .setFirstResult(pageNo * pageSize)
-                .getResultList();
+    public List<PaymentResAdminDTO> getPaymentsAdmin(String fromDate, String toDate, PaymentStatus status, String transactionId,
+                                                     Long customerId, Long postNum, Integer pageNo, Integer pageSize){
+        List<Payment> paymentList = this.paymentService.getListPaymentOfCustomer(fromDate, toDate, status, transactionId, customerId, postNum, pageNo, pageSize);
         if(paymentList != null){
-            List<PaymentResAdminDTO> response = new ArrayList<PaymentResAdminDTO>();
+            List<PaymentResAdminDTO> response = new ArrayList<>();
             for(Payment payment : paymentList){
                 response.add(AdminMapping.mappingPayment(payment));
             }
@@ -205,8 +167,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Payment getPaymentInfo(Long paymentId) {
-        Payment payment = this.paymentRepository.findByPostNum(paymentId);
+    public Payment getPaymentInfo(Long postNum) {
+        Payment payment = this.paymentService.getPaymentByPostNum(postNum);
         if(payment == null){
             throw new NotFoundException("Payment not found.", HttpStatus.OK);
         }

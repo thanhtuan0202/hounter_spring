@@ -54,7 +54,7 @@ public class PostController {
             }
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -84,16 +84,10 @@ public class PostController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/{id}/payments")
-    public ResponseEntity<?> getPaymentsOfPost(@PathVariable("id") Long postId){
-        return null;
-    }
     @GetMapping("/filter")
     public ResponseEntity<?> getFilterPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            // @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            // @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @Valid @ModelAttribute FilterPostDto filterDto, BindingResult binding) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
@@ -150,7 +144,7 @@ public class PostController {
             PostResponse response = this.postService.createPost(createPost, user_id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -166,15 +160,11 @@ public class PostController {
             return ResponseEntity.ok(response);
         }
         catch (PostNotFoundException e){
-            return new ResponseEntity<>(new ApiResponse<String>(e.getMessage()), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse<>(e.getMessage()), HttpStatus.OK);
         }
         catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-    @PostMapping("/{id}/payments")
-    public ResponseEntity<?> createPaymentForPost(@PathVariable("id") Long postId){
-        return null;
     }
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(@Valid @RequestBody CreatePostDto updatePost,
@@ -189,13 +179,9 @@ public class PostController {
             PostResponse response = this.postService.updatePost(postId, updatePost, user_id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-    }
-    @PutMapping("/{id}/payments/{paymentId}")
-    public ResponseEntity<?> updatePaymentForPost(@PathVariable("id") Long postId,@PathVariable("paymentId") Long paymentId){
-        return null;
     }
     @PatchMapping("/{id}")
     public ResponseEntity<?> changePostStatus(@Valid @PathVariable("id") Long postId,
@@ -210,33 +196,29 @@ public class PostController {
             if (updatePost) {
                 return ResponseEntity.ok("Thay đổi thành công");
             } else {
-                return ResponseEntity.ok(new ApiResponse<String>("Can't update post status after delete!"));
+                return ResponseEntity.ok(new ApiResponse<>("Can't update post status after delete!"));
             }
         } catch (ForbiddenException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PatchMapping("/{id}/payments/{paymentId}")
-    public ResponseEntity<?> updatePaymentStatus(@PathVariable("id") Long postId,@PathVariable("paymentId") Long paymentId){
-        return null;
-    }
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@Valid @PathVariable("id") Long postId) throws Exception{
+    public ResponseEntity<?> deletePost(@Valid @PathVariable("id") Long postId) {
         try{
             Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
             PostResponse postResponse = this.postService.deletePost(postId, userId);
             return ResponseEntity.ok(postResponse);
         }
         catch (PostNotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
         }
         catch (ForbiddenException e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

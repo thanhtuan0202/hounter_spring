@@ -7,6 +7,7 @@ import com.hounter.backend.application.DTO.AdminDTO.StaffResDTO;
 import com.hounter.backend.business_logic.entities.Payment;
 import com.hounter.backend.business_logic.interfaces.AdminService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
+import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -34,7 +34,7 @@ public class AdminController {
             return ResponseEntity.ok(response);
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,10 +47,10 @@ public class AdminController {
             return ResponseEntity.ok(customer);
         }
         catch (NotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), e.getStatus());
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -64,7 +64,7 @@ public class AdminController {
             return ResponseEntity.ok(response);
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -77,10 +77,10 @@ public class AdminController {
             return ResponseEntity.ok(staffResDTO);
         }
         catch (NotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), e.getStatus());
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -88,7 +88,7 @@ public class AdminController {
     public ResponseEntity<?> getPaymentHistory(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "status", required = false) Status status,
+            @RequestParam(value = "status", required = false) PaymentStatus status,
             @RequestParam(value = "fromDate", required = false) String fromDate,
             @RequestParam(value = "toDate", required = false) String toDate,
             @RequestParam(value = "transactionId", required = false) String transactionId,
@@ -99,8 +99,11 @@ public class AdminController {
             List<PaymentResAdminDTO> response = this.adminService.getPaymentsAdmin(fromDate, toDate, status, transactionId, customerId,postNum, pageNo - 1, pageSize);
             return response != null ? ResponseEntity.ok(response) : ResponseEntity.noContent().build();
         }
+        catch(DateTimeParseException e){
+            return new ResponseEntity<>("Invalid date format. Date must be in the format YYYY-MM-DD", HttpStatus.BAD_REQUEST);
+        }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -114,10 +117,10 @@ public class AdminController {
             return response != null ? ResponseEntity.ok(AdminMapping.mappingPayment(response)) : ResponseEntity.noContent().build();
         }
         catch (NotFoundException e){
-            return new ResponseEntity<String>(e.getMessage(), e.getStatus());
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

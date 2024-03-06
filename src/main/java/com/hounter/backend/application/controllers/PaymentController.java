@@ -45,8 +45,8 @@ public class PaymentController {
                                     @RequestHeader(name = "Remote-Addr", required = false) String remoteAddr,
                                     @RequestParam("id") String id,
                                     @RequestParam("trans-date") String transDate) throws IOException {
-        this.paymentService.getPaymentInfo(id, transDate,xForwardedFor, remoteAddr);
-        return ResponseEntity.ok("Ok");
+
+        return ResponseEntity.ok(this.paymentService.getPaymentInfo(id, transDate,xForwardedFor, remoteAddr));
     }
     @GetMapping("create-payment")
     public ResponseEntity<?> createPayment(@RequestHeader(name = "X-FORWARDED-FOR", required = false) String xForwardedFor,

@@ -1,20 +1,28 @@
 package com.hounter.backend.business_logic.services;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hounter.backend.application.DTO.PaymentDTO.CreatePaymentDTO;
-import com.hounter.backend.business_logic.entities.*;
+import com.hounter.backend.application.DTO.VNPayResDTO;
+import com.hounter.backend.business_logic.entities.Cost;
+import com.hounter.backend.business_logic.entities.Payment;
+import com.hounter.backend.business_logic.entities.Post;
+import com.hounter.backend.business_logic.entities.PostCost;
 import com.hounter.backend.business_logic.interfaces.PaymentService;
 import com.hounter.backend.config.VnpayConfig;
 import com.hounter.backend.data_access.repositories.PaymentRepository;
 import com.hounter.backend.data_access.repositories.PostCostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
-
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +34,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -37,6 +46,8 @@ public class PaymentServiceImpl implements PaymentService {
     private PostRepository postRepository;
     @Autowired
     private PostCostRepository postCostRepository;
+    @PersistenceContext
+    protected EntityManager em;
     public PaymentServiceImpl() throws UnknownHostException {
     }
 
@@ -57,7 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         payment.setTotalPrice(total_price);
         payment.setPostCost(postCost);
-        payment.setStatus(PaymentStatus.waiting);
+        payment.setStatus(PaymentStatus.PENDING);
         payment.setCustomer(postCost.getPost().getCustomer());
         payment.setPaymentInfo("Thanh toan cho bai dang: " + postCost.getPost().getId());
         payment.setPostNum(postCost.getPost().getId());
@@ -74,7 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
         Post post = optionalPost.get();
         Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post));
         payment.setPaymentDate(LocalDate.now());
-        payment.setStatus(PaymentStatus.success);
+        payment.setStatus(PaymentStatus.COMPLETE);
         payment.setPaymentId(transactionNo);
         payment.setTotalPrice(amount / 100);
         payment.setPaymentMethod(bankCode);
@@ -88,14 +99,24 @@ public class PaymentServiceImpl implements PaymentService {
             throw new PostNotFoundException("Post not found.");
         }
         Post post = optionalPost.get();
+        if(!Objects.equals(post.getCustomer().getId(), userId)){
+            throw new PostNotFoundException("Post not found.");
+        }
+        Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post));
+        if(payment.getStatus() == PaymentStatus.COMPLETE){
+            return new CreatePaymentDTO("", "Payment has been completed", "Payment has been completed");
+        }
+        if(payment.getStatus() == PaymentStatus.EXPIRED){
+            return new CreatePaymentDTO("", "Payment has been expired", "Payment has been expired");
+        }
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        long vnp_amount = amount == 0 ? post.getPrice() * 100 : amount * 100;
+        long vnp_amount = payment.getTotalPrice() * 100;
         String bankCode = "NCB";
 
-        String vnp_TxnRef = VnpayConfig.getRandomNumber(8);
-        String vnp_IpAddr = VnpayConfig.getIpAddress(xForwardedFor, remoteAddr);
+        String vnp_TxnRef = post.getId().toString();
+        String vnp_IpAddr = serverAddress;
 
         String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
 
@@ -108,7 +129,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", payment.getPaymentInfo());
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
 
@@ -154,7 +175,7 @@ public class PaymentServiceImpl implements PaymentService {
         return new CreatePaymentDTO(paymentUrl, "Ok", "Successfully");
     }
     @Override
-    public void getPaymentInfo(String orderId, String vnp_TransDate, String xForwardedFor, String remoteAddr) throws IOException {
+    public VNPayResDTO getPaymentInfo(String orderId, String vnp_TransDate, String xForwardedFor, String remoteAddr) throws IOException {
         String vnp_RequestId = VnpayConfig.getRandomNumber(8);
         String vnp_Version = "2.1.0";
         String vnp_Command = "querydr";
@@ -197,9 +218,6 @@ public class PaymentServiceImpl implements PaymentService {
         wr.flush();
         wr.close();
         int responseCode = con.getResponseCode();
-        System.out.println("nSending 'POST' request to URL : " + url);
-        System.out.println("Post Data : " + vnp_Params);
-        System.out.println("Response Code : " + responseCode);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
         String output;
@@ -208,12 +226,47 @@ public class PaymentServiceImpl implements PaymentService {
             response.append(output);
         }
         in.close();
-        System.out.println(response.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        VNPayResDTO results = objectMapper.readValue(response.toString(), VNPayResDTO.class);
+        return results;
     }
 
     @Override
-    public List<Payment> getListPaymentOfCustomer(Customer customer, Integer pageNo, Integer pageSize) {
-        Pageable pageable =  PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "createAt"));
-        return this.paymentRepository.findByCustomer(customer, pageable);
+    public List<Payment> getListPaymentOfCustomer(String fromDate, String toDate, PaymentStatus status, String transactionId, Long customerId, Long postNum, Integer pageNo, Integer pageSize) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        Root<Payment> paymenRoot = cq.from(Payment.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if(fromDate != null){
+            LocalDate from = LocalDate.parse(fromDate, formatter);
+            predicates.add(cb.greaterThanOrEqualTo(paymenRoot.get("createAt"), from));
+        }
+        if(toDate != null){
+            LocalDate to = LocalDate.parse(toDate, formatter);
+            predicates.add(cb.lessThanOrEqualTo(paymenRoot.get("createAt"), to));
+        }
+        if(status != null){
+            predicates.add(cb.equal(paymenRoot.get("status"), status));
+        }
+        if(transactionId != null){
+            predicates.add(cb.equal(paymenRoot.get("paymentId"), transactionId));
+        }
+        if(customerId != null){
+            predicates.add(cb.equal(paymenRoot.get("customer").get("id"), customerId));
+        }
+        if (postNum != null) {
+            predicates.add(cb.equal(paymenRoot.get("postNum"), postNum));
+        }
+        cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(paymenRoot.get("createAt")));
+        return em.createQuery(cq).setMaxResults(pageSize)
+                .setFirstResult(pageNo * pageSize)
+                .getResultList();
+    }
+    @Override
+    public Payment getPaymentByPostNum(Long postNum) {
+        return this.paymentRepository.findByPostNum(postNum);
     }
 }

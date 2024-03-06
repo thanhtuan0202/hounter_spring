@@ -27,32 +27,19 @@ public class AccountController {
     public AccountController(CustomUserDetailServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
-
-    @GetMapping
-    public ResponseEntity<?> getAllAccounts(){
-        // Set<AccountResponse> result = accountService.getAllAccounts();
-        return null;
-    }
-    @GetMapping("/{accountId}")
-    public ResponseEntity<?> getAccountInfo(
-            @PathVariable("accountId") Long accountId
-    ){
-
-        return null;
-    }
     @PostMapping("/{account_id}")
     public ResponseEntity<String> changeActive(@PathVariable("account_id") Long id){
         try{
             boolean result = accountService.changeActive(id);
             if(result){
-                return new ResponseEntity<String>("Thành công", HttpStatus.OK);
+                return new ResponseEntity<>("Thành công", HttpStatus.OK);
             }
             else{
-                return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
         }
     }
 
@@ -66,17 +53,17 @@ public class AccountController {
         try{
             boolean result = accountService.changePassword(changePasswordDTO, user_id);
             if (result){
-                return new ResponseEntity<String>("Thay đổi mật khẩu thành công!", HttpStatus.OK);
+                return new ResponseEntity<>("Thay đổi mật khẩu thành công!", HttpStatus.OK);
             }
             else{
-                return new ResponseEntity<String>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
         catch (ConfirmPasswordNotMatch e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         catch (Exception e){
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.OK);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
         }
     }
 

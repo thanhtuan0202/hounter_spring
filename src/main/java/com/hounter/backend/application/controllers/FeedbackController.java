@@ -38,7 +38,7 @@ public class FeedbackController {
             }
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -52,13 +52,22 @@ public class FeedbackController {
             return ResponseEntity.noContent().build();
         }
         catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFeedbackById(@Valid @PathVariable("id") Long feedbackId){
-        return null;
+        try{
+            Boolean result = this.feedbackService.deleteFeedbackById(feedbackId);
+            if(result){
+                return ResponseEntity.ok(new ApiResponse<>("Delete feedback successfully"));
+            }
+            return ResponseEntity.noContent().build();
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PostMapping("/{postId}")
     public ResponseEntity<?> createFeedback(@Valid @PathVariable("postId") Long postId,@Valid @RequestBody CreateFeedback createFeedback, BindingResult binding){

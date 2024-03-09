@@ -1,6 +1,7 @@
 package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.CustomerDTO.CustomerResponseDTO;
+import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
 import com.hounter.backend.application.DTO.PaymentDTO.PaymentResDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
@@ -82,5 +83,10 @@ public class CustomerServiceImpl implements CustomerService {
             response.add(PaymentMapping.toPaymentResMapping(payment));
         }
         return response;
+    }
+
+    @Override
+    public PostOfUserRes getPostDetail(Long postId) {
+        return this.postService.getPostDetailOfUser(postId);
     }
 }

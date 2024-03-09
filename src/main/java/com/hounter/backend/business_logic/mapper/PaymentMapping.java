@@ -16,6 +16,7 @@ public class PaymentMapping {
         response.setPostTitle(payment.getPostCost().getPost().getTitle());
         response.setCostType(payment.getPostCost().getCost().getName());
         response.setActiveDays(payment.getPostCost().getActiveDays());
+        response.setPaymentInfo(payment.getPaymentInfo());
         return response;
     }
 }

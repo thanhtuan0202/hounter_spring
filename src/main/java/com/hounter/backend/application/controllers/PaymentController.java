@@ -29,12 +29,13 @@ public class PaymentController {
             @RequestParam("vnp_Amount") Integer vnp_Amount,
             @RequestParam("vnp_TxnRef") Long vnp_TxnRef
     ){
-//        String reactAppUrl = "https://youtube.com";
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Location", reactAppUrl);
-//        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
         if(vnp_ResponseCode.equals("00")){
             this.paymentService.confirmSuccessPayment(vnp_TxnRef,vnp_TransactionNo,vnp_BankCode,vnp_Amount);
+            // String reactAppUrl = "http://localhost:3000/user/posts";
+            //HttpHeaders headers = new HttpHeaders();
+            //headers.add("Location", reactAppUrl);
+            //return new ResponseEntity<>(headers, HttpStatus.FOUND);
             return ResponseEntity.ok("Giao dich thanh cong.");
         }
         return ResponseEntity.ok("Giao dich that bai.");

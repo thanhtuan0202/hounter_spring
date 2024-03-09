@@ -15,6 +15,7 @@ import com.hounter.backend.data_access.repositories.PaymentRepository;
 import com.hounter.backend.data_access.repositories.PostCostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
+import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -60,22 +61,30 @@ public class PaymentServiceImpl implements PaymentService {
         Cost cost = postCost.getCost();
         Integer days = postCost.getActiveDays();
         Integer total_price = cost.getPrice() * days;
-        if(days >= 7 && days < 30) {
-            total_price -= total_price * cost.getDiscount_7days();
-        }
-        else if(days >= 30){
-            total_price -= total_price * cost.getDiscount_30days();
-        }
+        // if(days >= 7 && days < 30) {
+        //     total_price -= total_price * cost.getDiscount_7days();
+        // }
+        // else if(days >= 30){
+        //     total_price -= total_price * cost.getDiscount_30days();
+        // }
         payment.setTotalPrice(total_price);
         payment.setPostCost(postCost);
         payment.setStatus(PaymentStatus.PENDING);
         payment.setCustomer(postCost.getPost().getCustomer());
         payment.setPaymentInfo("Thanh toan cho bai dang: " + postCost.getPost().getId());
         payment.setPostNum(postCost.getPost().getId());
-        Payment saved = this.paymentRepository.save(payment);
-        
+        this.paymentRepository.save(payment); 
     }
 
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public void savePaymentOfPost(Payment payment, PostCost postCost) {
+        payment.setCreateAt(LocalDate.now());
+        payment.setExpireAt(LocalDate.now().plusDays(7));
+        payment.setTotalPrice(postCost.getCost().getPrice() * postCost.getActiveDays());
+        payment.setStatus(PaymentStatus.PENDING);
+        this.paymentRepository.save(payment); 
+    }
     @Override
     public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
@@ -89,6 +98,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentId(transactionNo);
         payment.setTotalPrice(amount / 100);
         payment.setPaymentMethod(bankCode);
+        post.setStatus(Status.active);
+        post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
         this.paymentRepository.save(payment);
     }
 
@@ -250,13 +261,13 @@ public class PaymentServiceImpl implements PaymentService {
         if(status != null){
             predicates.add(cb.equal(paymenRoot.get("status"), status));
         }
-        if(transactionId != null){
+        if(transactionId != null && !transactionId.isEmpty()){
             predicates.add(cb.equal(paymenRoot.get("paymentId"), transactionId));
         }
-        if(customerId != null){
+        if(customerId != null && customerId > 0){
             predicates.add(cb.equal(paymenRoot.get("customer").get("id"), customerId));
         }
-        if (postNum != null) {
+        if (postNum != null && postNum > 0) {
             predicates.add(cb.equal(paymenRoot.get("postNum"), postNum));
         }
         cq.where(predicates.toArray(new Predicate[0]));
@@ -269,4 +280,5 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment getPaymentByPostNum(Long postNum) {
         return this.paymentRepository.findByPostNum(postNum);
     }
+
 }

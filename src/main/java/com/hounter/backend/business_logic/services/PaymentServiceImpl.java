@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hounter.backend.application.DTO.PaymentDTO.CreatePaymentDTO;
 import com.hounter.backend.application.DTO.VNPayResDTO;
-import com.hounter.backend.business_logic.entities.Cost;
-import com.hounter.backend.business_logic.entities.Payment;
-import com.hounter.backend.business_logic.entities.Post;
-import com.hounter.backend.business_logic.entities.PostCost;
+import com.hounter.backend.business_logic.entities.*;
 import com.hounter.backend.business_logic.interfaces.PaymentService;
 import com.hounter.backend.config.VnpayConfig;
 import com.hounter.backend.data_access.repositories.PaymentRepository;
@@ -47,6 +44,8 @@ public class PaymentServiceImpl implements PaymentService {
     private PostRepository postRepository;
     @Autowired
     private PostCostRepository postCostRepository;
+    @Autowired
+    private NotificationService notificationService;
     @PersistenceContext
     protected EntityManager em;
     public PaymentServiceImpl() throws UnknownHostException {
@@ -85,6 +84,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(PaymentStatus.PENDING);
         this.paymentRepository.save(payment); 
     }
+
     @Override
     public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
@@ -100,6 +100,9 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentMethod(bankCode);
         post.setStatus(Status.active);
         post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
+        Notify notify = new Notify(NotificationService.TITLE_COMPLETE, "", String.format(NotificationService.CONTENT_COMPLETE, payment.getPaymentId()),
+                LocalDate.now().toString(), false, post.getCustomer().getId().intValue());
+        this.notificationService.createNotification(notify);
         this.paymentRepository.save(payment);
     }
 
@@ -185,6 +188,7 @@ public class PaymentServiceImpl implements PaymentService {
         String paymentUrl = VnpayConfig.vnp_PayUrl + "?" + queryUrl;
         return new CreatePaymentDTO(paymentUrl, "Ok", "Successfully");
     }
+
     @Override
     public VNPayResDTO getPaymentInfo(String orderId, String vnp_TransDate, String xForwardedFor, String remoteAddr) throws IOException {
         String vnp_RequestId = VnpayConfig.getRandomNumber(8);

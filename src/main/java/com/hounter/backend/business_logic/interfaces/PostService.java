@@ -1,5 +1,6 @@
 package com.hounter.backend.business_logic.interfaces;
 
+import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.application.DTO.PostDto.*;
@@ -19,8 +20,9 @@ public interface PostService {
     List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer page,Customer customer,String category,Long cost,String startDate,String endDate);
     List<ShortPostResponse> searchOnMap(float latitude, float longitude, Integer pageSize, Integer pageNo);
     PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception;
-    PostResponse updatePost(Long postId,CreatePostDto updatePostDTO, Long userId) throws Exception;
+    PostResponse updatePost(Long postId,UpdatePostDTO updatePostDTO, Long userId) throws Exception;
     PostResponse deletePost(Long id, Long userId);
+    PostOfUserRes getPostDetailOfUser(Long postId);
     FeedbackResponse createNewFeedback(CreateFeedback createFeedback, Long postId, Long userId);
     List<ShortPostResponse> filterPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir,FilterPostDto filter);
     List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q);

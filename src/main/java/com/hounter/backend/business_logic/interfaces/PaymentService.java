@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface PaymentService {
     void savePaymentOfPost(PostCost postCost, Long userId);
+    void savePaymentOfPost(Payment payment, PostCost postCost);
     void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount);
     CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr, Long postId, Long amount, Long userId) throws IOException;
     VNPayResDTO getPaymentInfo(String orderId, String transDate, String xForwardedFor, String remoteAddr) throws IOException;

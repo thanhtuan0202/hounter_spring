@@ -24,7 +24,7 @@ public class HounterApplication {
         try {
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://smarthouse-5d1ad-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .setDatabaseUrl("https://bhx-clone-5db5a-default-rtdb.asia-southeast1.firebasedatabase.app")
                     .build();
 
             if(FirebaseApp.getApps().isEmpty()) {

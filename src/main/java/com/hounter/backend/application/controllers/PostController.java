@@ -167,7 +167,7 @@ public class PostController {
         }
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePost(@Valid @RequestBody CreatePostDto updatePost,
+    public ResponseEntity<?> updatePost(@Valid @RequestBody UpdatePostDTO updatePost,
             @Valid @PathVariable("id") Long postId,
             BindingResult binding) {
         if (binding.hasErrors()) {

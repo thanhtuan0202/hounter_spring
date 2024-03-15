@@ -9,14 +9,10 @@ import com.hounter.backend.data_access.repositories.PostCostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.exceptions.CostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +25,7 @@ public class PostCostServiceImpl implements PostCostService {
 
     @Autowired
     private CostRepository costRepository;
+    
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public void enrollPostToCost(Long post_id, Long cost_id, Integer days) {
@@ -41,7 +38,23 @@ public class PostCostServiceImpl implements PostCostService {
             cost_post.setCost(cost);
             cost_post.setActiveDays(days);
             cost_post.setDate(LocalDate.now());
-            PostCost saved = this.postCostRepository.save(cost_post);
+            this.postCostRepository.save(cost_post);
+        }
+        else{
+            throw new CostNotFoundException("Fail to select cost or not found post!");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public void updatePostCost(PostCost postCost, Long costId, Integer days){
+        Optional<Cost> op_cost = this.costRepository.findById(costId);
+        if(op_cost.isPresent()) {
+            Cost cost = op_cost.get();
+            postCost.setCost(cost);
+            postCost.setActiveDays(days);
+            postCost.setDate(LocalDate.now());
+            this.postCostRepository.save(postCost);
         }
         else{
             throw new CostNotFoundException("Fail to select cost or not found post!");

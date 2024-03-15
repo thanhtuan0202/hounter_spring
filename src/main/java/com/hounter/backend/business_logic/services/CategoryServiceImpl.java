@@ -4,7 +4,6 @@ import com.hounter.backend.application.DTO.CategoryDTO.CategoryResponse;
 import com.hounter.backend.business_logic.entities.Category;
 import com.hounter.backend.business_logic.interfaces.CategoryService;
 import com.hounter.backend.data_access.repositories.CategoryRepository;
-import com.hounter.backend.shared.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

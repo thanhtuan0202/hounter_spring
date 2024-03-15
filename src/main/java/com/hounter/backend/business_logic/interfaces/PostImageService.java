@@ -7,4 +7,5 @@ import java.util.List;
 public interface PostImageService {
     void storeImageOfPost(Long postId, List<String> imageUrls);
     void storeImageOfPost(Post post, List<String> imageUrls);
+    void deleteImageOfPost(Post post, List<String> deleteImages);
 }

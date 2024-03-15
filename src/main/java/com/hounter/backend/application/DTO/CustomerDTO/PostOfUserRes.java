@@ -1,21 +1,14 @@
-package com.hounter.backend.application.DTO.PostDto;
+package com.hounter.backend.application.DTO.CustomerDTO;
 
-import com.hounter.backend.shared.enums.Status;
-import lombok.AllArgsConstructor;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class PostResponse {
+public class PostOfUserRes {
     private Long id;
     private String title;
     private String description;
@@ -27,13 +20,7 @@ public class PostResponse {
     private String district;
     private String ownerName;
     private String ownerPhone;
-    private LocalDate createAt;
-    private LocalDate expireAt;
     private Long category;
-    private Long cost;
-    private ShortCustomer owner;
-    private Status status;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
+    private PostCostRes cost;
     private List<String> imageList;
 }

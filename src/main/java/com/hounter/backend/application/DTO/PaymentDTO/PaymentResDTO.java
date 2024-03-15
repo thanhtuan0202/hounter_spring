@@ -14,6 +14,7 @@ public class PaymentResDTO {
     private PaymentStatus status;
     private Integer totalPrice;
     private String paymentMethod;
+    private String paymentInfo;
     private LocalDate createAt;
     private LocalDate paymentAt;
     private String transactionId;

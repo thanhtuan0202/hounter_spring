@@ -1,6 +1,7 @@
 package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.CustomerDTO.CustomerResponseDTO;
+import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
 import com.hounter.backend.application.DTO.PaymentDTO.PaymentResDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
@@ -78,7 +79,24 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
-
+    @GetMapping("/{userId}/posts/{postId}")
+    public ResponseEntity<?> getPostDetail(@PathVariable("userId") Long userId, @PathVariable("postId") Long postId) {
+        try {
+            Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            if(!Objects.equals(tokenId, userId)){
+                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+            }
+            PostOfUserRes response = this.userService.getPostDetail(postId);
+            if (response == null) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.ok(response);
+            }
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+    }
+    
     @GetMapping("/{userId}/payments")
     public ResponseEntity<?> getPaymentList(@PathVariable("userId") Long userId,
                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -86,7 +104,7 @@ public class UserController {
                                             @RequestParam(value = "status", required = false) PaymentStatus status,
                                             @RequestParam(value = "fromDate", required = false) String fromDate,
                                             @RequestParam(value = "toDate", required = false) String toDate,
-                                            @RequestParam(value = "transactionId", required = false) String transactionId,
+                                            @RequestParam(value = "transactionId", required = false, defaultValue = "") String transactionId,
                                             @RequestParam(value = "postNum", required = false) Long postNum) {
         try{
             Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
@@ -124,6 +142,9 @@ public class UserController {
         }
         try {
             Long userId_token = this.userDetailsService.getCurrentUserDetails().getUserId();
+            if(!Objects.equals(userId_token, userId)){
+                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+            }
             CustomerResponseDTO result = userService.changeCustomerInfo(userId, userInfoDTO);
             return ResponseEntity.ok(result);
         } catch (Exception e) {

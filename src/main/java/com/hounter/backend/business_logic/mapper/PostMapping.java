@@ -2,11 +2,10 @@ package com.hounter.backend.business_logic.mapper;
 
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
-
+import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
 import com.hounter.backend.application.DTO.PostDto.ShortCustomer;
@@ -108,5 +107,29 @@ public class PostMapping {
         response.setStatus(post.getStatus());
         response.setExpireAt(post.getExpireAt());
         return response;
+    }
+
+    public static PostOfUserRes PostOfUserMapping(Post post){
+        PostOfUserRes postDetail = new PostOfUserRes();
+        postDetail.setId(post.getId());
+        postDetail.setTitle(post.getTitle());
+        postDetail.setDescription(post.getDescription());
+        postDetail.setPrice(post.getPrice());
+        postDetail.setArea(post.getArea());
+        postDetail.setCategory(post.getCategory().getId());
+        postDetail.setFullAddress(post.getFullAdress());
+        postDetail.setCity(post.getCity());
+        postDetail.setCounty(post.getCounty());
+        postDetail.setDistrict(post.getDistrict());
+        postDetail.setOwnerName(post.getCustomerName());
+        postDetail.setOwnerPhone(post.getCustomerPhone());
+        Set<PostImage> images = post.getPostImages();
+        List<PostImage> lst = new ArrayList<>(images);
+        List<String> img = new ArrayList<String>();
+        for (PostImage item : lst){
+            img.add(item.getImageUrl());
+        }
+        postDetail.setImageList(img);
+        return postDetail;
     }
 }

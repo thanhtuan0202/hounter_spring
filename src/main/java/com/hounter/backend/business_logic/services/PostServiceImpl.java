@@ -1,5 +1,7 @@
 package com.hounter.backend.business_logic.services;
 
+import com.hounter.backend.application.DTO.CustomerDTO.PostCostRes;
+import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.application.DTO.PostDto.*;
@@ -66,9 +68,6 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private FeedbackService feedbackService;
-
-    @Autowired
-    private FindPointsAddress findPointsAddress;
 
     @Autowired
     private FindPointMapbox findPointMapbox;
@@ -217,7 +216,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(rollbackFor = { Exception.class })
-    public PostResponse updatePost(Long postId, CreatePostDto updatePostDTO, Long userId) throws Exception {
+    public PostResponse updatePost(Long postId, UpdatePostDTO updatePostDTO, Long userId) throws Exception {
         Optional<Post> op_post = this.postRepository.findById(postId);
         if (op_post.isPresent()) {
             Post post = op_post.get();
@@ -225,7 +224,31 @@ public class PostServiceImpl implements PostService {
                 throw new ForbiddenException("Forbidden", HttpStatus.FORBIDDEN);
             } else {
                 // update data for post
-                return null;
+                post.setTitle(updatePostDTO.getTitle());
+                post.setDescription(updatePostDTO.getDescription());
+                post.setPrice(updatePostDTO.getPrice());
+                post.setCity(updatePostDTO.getCity());
+                post.setCounty(updatePostDTO.getCounty());
+                post.setDistrict(updatePostDTO.getDistrict());
+                post.setUpdateAt(LocalDate.now());
+                post.setFullAdress(updatePostDTO.getFullAddress());
+                Category category = this.categoryRepository.findByName(updatePostDTO.getCategory());
+                if (category != null) {
+                    post.setCategory(category);
+                } else {
+                    throw new CategoryNotFoundException("Cannot find category with name " + updatePostDTO.getCategory());
+                }
+                PostCost postCost = this.postCostService.findByPost(post);
+                this.postCostService.updatePostCost(postCost, updatePostDTO.getCost(), updatePostDTO.getDays());
+                Payment payment = this.paymentService.getPaymentByPostNum(postId);
+                this.paymentService.savePaymentOfPost(payment, postCost);
+                this.postImageService.storeImageOfPost(post, updatePostDTO.getAddImages());
+                this.postImageService.deleteImageOfPost(post, updatePostDTO.getDeleteImages());
+                FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(updatePostDTO.getFullAddress());
+                post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
+                post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
+                Post saved_post = this.postRepository.save(post);
+                return PostMapping.PostResponseMapping(saved_post);
             }
         } else {
             throw new PostNotFoundException("Cannot find post with id " + postId);
@@ -375,5 +398,18 @@ public class PostServiceImpl implements PostService {
         } else {
             throw new PostNotFoundException("Cannot find post with id " + postId);
         }
+    }
+
+    @Override
+    public PostOfUserRes getPostDetailOfUser(Long postId) {
+        Optional<Post> postOptional = this.postRepository.findById(postId);
+        if(postOptional.isPresent()){
+            Post post = postOptional.get();
+            PostOfUserRes response = PostMapping.PostOfUserMapping(post);
+            response.setCost(new PostCostRes(this.postCostService.findByPost(post).getCost().getId(),
+                    this.postCostService.findByPost(post).getActiveDays()));
+            return response;
+        }
+        return null;
     }
 }

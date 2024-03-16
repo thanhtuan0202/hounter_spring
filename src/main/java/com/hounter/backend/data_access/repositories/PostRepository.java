@@ -14,10 +14,11 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    public List<Post> findByStatus(Status status,Pageable page);
-    public List<Post> findByStatusAndCategory(Status status, Category category,Pageable page);
-    public List<Post> findByCustomer(Customer customer,Pageable page);    
-    public List<Post> findByCustomerAndStatus(Customer customer,Status status,Pageable page);
+    List<Post> findByStatus(Status status, Pageable page);
+    List<Post> findByStatusAndCategory(Status status, Category category, Pageable page);
+    List<Post> findByCustomer(Customer customer, Pageable page);
+    List<Post> findByCustomerAndStatus(Customer customer, Status status, Pageable page);
     @Query(value = "SELECT * FROM posts p WHERE distance_haversine(p.latitude, p.longitude, :latitude, :longitude) < 3", nativeQuery = true)
-    public List<Post> findPostNearYou(@Param("latitude") float latitude,@Param("longitude") float longitude, Pageable pageable);
+    List<Post> findPostNearYou(@Param("latitude") float latitude, @Param("longitude") float longitude, Pageable pageable);
+
 }

@@ -7,9 +7,12 @@ import com.hounter.backend.application.DTO.PostDto.*;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.shared.enums.Status;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PostService {
+    //Scheduler function
+    void handlePostExpire(LocalDate date);
     //to all users
     PostResponse getPostById(Long postId, boolean isUser);
     List<ShortPostResponse> getAllPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir);

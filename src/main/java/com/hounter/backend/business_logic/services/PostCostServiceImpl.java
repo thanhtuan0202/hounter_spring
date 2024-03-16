@@ -71,6 +71,7 @@ public class PostCostServiceImpl implements PostCostService {
             cost_post.setCost(cost);
             cost_post.setActiveDays(days);
             cost_post.setDate(LocalDate.now());
+            cost_post.setPost(post);
             return this.postCostRepository.save(cost_post);
         }
         else{

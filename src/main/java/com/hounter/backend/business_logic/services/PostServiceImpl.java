@@ -412,4 +412,23 @@ public class PostServiceImpl implements PostService {
         }
         return null;
     }
+
+    @Override
+    public void handlePostExpire(LocalDate date) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Post> cq = cb.createQuery(Post.class);
+
+        Root<Post> post = cq.from(Post.class);
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(post.get("status"), Status.active));
+        predicates.add(cb.lessThanOrEqualTo(post.get("expireAt"), date));
+        cq.where(predicates.toArray(new Predicate[0]));
+        List<Post> posts = em.createQuery(cq).getResultList();
+        for (Post postItem : posts) {
+            postItem.setStatus(Status.inactive);
+            postItem.setUpdateAt(LocalDate.now());
+            this.postRepository.save(postItem);
+        }
+        log.info("Checking post expiration...done with " + posts.size() + " posts");
+    }
 }

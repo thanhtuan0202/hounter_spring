@@ -81,7 +81,6 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson -->
 
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
@@ -107,6 +106,10 @@
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>8.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
     </dependencies>

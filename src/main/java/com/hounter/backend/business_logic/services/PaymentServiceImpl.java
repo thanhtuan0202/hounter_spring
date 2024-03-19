@@ -22,6 +22,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,8 @@ public class PaymentServiceImpl implements PaymentService {
     private PostCostRepository postCostRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @PersistenceContext
     protected EntityManager em;
     public PaymentServiceImpl() throws UnknownHostException {
@@ -305,6 +308,7 @@ public class PaymentServiceImpl implements PaymentService {
                     String.format(NotificationService.CONTENT_EXPIRED, payment.getPostNum()),
                     LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
             this.notificationService.createNotification(notify);
+            this.messagingTemplate.convertAndSendToUser(payment.getCustomer().getUsername(), "/user/notify", notify);
         }
         log.info("Checking payment expiration... done with " + payments.size() + " payments.");
     }

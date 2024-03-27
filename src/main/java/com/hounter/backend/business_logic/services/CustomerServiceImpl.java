@@ -14,6 +14,7 @@ import com.hounter.backend.business_logic.mapper.CustomerMapping;
 import com.hounter.backend.business_logic.mapper.PaymentMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
+import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class CustomerServiceImpl implements CustomerService {
         Optional<Customer> optionalCustomer = this.customerRepository.findById(customerId);
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
-            return CustomerMapping.ResponeMapping(customer);
+            return CustomerMapping.ResponseMapping(customer);
         }
         return null;
     }
@@ -60,17 +61,17 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setUpdateAt(LocalDate.now());
             customer.setAvatar(customerInfo.getAvatar());
             this.customerRepository.save(customer);
-            return CustomerMapping.ResponeMapping(customer);
+            return CustomerMapping.ResponseMapping(customer);
         }
         throw new IllegalIdentifierException("Customer not found");
     }
 
     @Override
-    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo, String category,Long cost, Long customerId,String beginDate,String endDate) {
+    public List<ShortPostResponse> getPostOfCustomer(Integer pageSize, Integer pageNo, String category,String cost, Long customerId,String beginDate,String endDate, Status status) {
         Optional<Customer> optionalCustomer = this.customerRepository.findById(customerId);
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
-            return this.postService.filterPostForUser(pageSize, pageNo, customer,category,cost,beginDate,endDate);
+            return this.postService.filterPostForUser(pageSize, pageNo, customer,category,cost,beginDate,endDate, status);
         }
         throw new NotFoundException("Customer not found!", HttpStatus.UNAUTHORIZED);
     }

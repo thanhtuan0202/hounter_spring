@@ -46,12 +46,14 @@ public class StaffController {
     public ResponseEntity<?> staffGetPost(
         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
         @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-        @RequestParam(value = "type", defaultValue = "1") Long type,
-        @RequestParam(value = "status", defaultValue = "waiting") Status status
+        @RequestParam(value = "category", defaultValue = "") String category,
+        @RequestParam(value = "cost", defaultValue = "") String cost,
+        @RequestParam(value = "status", defaultValue = "") Status status,
+        @RequestParam(value = "fromDate", defaultValue = "") String fromDate,
+        @RequestParam(value = "toDate", defaultValue = "") String toDate
     ){
         try {
-            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "createAt", "desc",
-                    status);
+            List<ShortPostResponse> response = this.postService.filterPostForUser(pageSize, pageNo - 1, null, category, cost, fromDate, toDate, status);
             if (response == null) {
                 return ResponseEntity.noContent().build();
             }

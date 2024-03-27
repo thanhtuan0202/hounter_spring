@@ -2,6 +2,7 @@ package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.ApiResponse.ApiResponse;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
+import com.hounter.backend.application.DTO.FeedbackDto.FeedbackDetailResponse;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.business_logic.interfaces.FeedbackService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
@@ -45,7 +46,7 @@ public class FeedbackController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getFeedbackById(@Valid @PathVariable("id") Long id) {
         try{
-            FeedbackResponse response = this.feedbackService.getFeedbackById(id);
+            FeedbackDetailResponse response = this.feedbackService.getFeedbackById(id);
             if (response != null) {
                 return ResponseEntity.ok(response);
             }

@@ -11,6 +11,7 @@ import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.business_logic.services.NotificationService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
+import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 import com.hounter.backend.shared.utils.MappingError;
 import jakarta.validation.Valid;
@@ -63,9 +64,9 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "status", required = false,defaultValue = "") String status,
+            @RequestParam(value = "status", required = false,defaultValue = "") Status status,
             @RequestParam(value = "category", required = false, defaultValue = "Nhà trọ") String category,
-            @RequestParam(value = "cost", required = false, defaultValue = "0") Long cost,
+            @RequestParam(value = "cost", required = false, defaultValue = "") String cost,
             @RequestParam(value = "beginDate", required = false,defaultValue = "") String beginDate,
             @RequestParam(value = "endDate", required = false,defaultValue = "") String endDate) {
         try {
@@ -73,7 +74,7 @@ public class UserController {
             if(!Objects.equals(tokenId, userId)){
                 return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
             }
-            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1,category,cost, userId,beginDate,endDate);
+            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1,category,cost, userId,beginDate,endDate, status);
             if (response == null) {
                 return ResponseEntity.noContent().build();
             } else {

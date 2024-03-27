@@ -1,9 +1,6 @@
 package com.hounter.backend.application.controllers;
 
-import com.hounter.backend.application.DTO.AdminDTO.CreateStaffDTO;
-import com.hounter.backend.application.DTO.AdminDTO.CustomerRestDTO;
-import com.hounter.backend.application.DTO.AdminDTO.PaymentResAdminDTO;
-import com.hounter.backend.application.DTO.AdminDTO.StaffResDTO;
+import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.business_logic.entities.Payment;
 import com.hounter.backend.business_logic.interfaces.AdminService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
@@ -30,7 +27,7 @@ public class AdminController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo
     ){
         try{
-            List<CustomerRestDTO> response = this.adminService.getListCustomer(pageNo - 1, pageSize);
+            List<CustomerListResDTO> response = this.adminService.getListCustomer(pageNo - 1, pageSize);
             return ResponseEntity.ok(response);
         }
         catch (Exception e){
@@ -40,7 +37,9 @@ public class AdminController {
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserAccountInfo(
-            @PathVariable("userId") Long userId
+            @PathVariable("userId") Long userId,
+            @RequestParam(value = "postPage", defaultValue = "1") Integer postPage,
+            @RequestParam(value = "postPageSize", defaultValue = "10") Integer postPageSize
     ){
         try{
             CustomerRestDTO customer = this.adminService.getCustomerInfo(userId);

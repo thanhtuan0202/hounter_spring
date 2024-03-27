@@ -1,20 +1,15 @@
 package com.hounter.backend.business_logic.services;
 
-import com.hounter.backend.application.DTO.AdminDTO.CreateStaffDTO;
-import com.hounter.backend.application.DTO.AdminDTO.CustomerRestDTO;
-import com.hounter.backend.application.DTO.AdminDTO.PaymentResAdminDTO;
-import com.hounter.backend.application.DTO.AdminDTO.StaffResDTO;
+import com.hounter.backend.application.DTO.AdminDTO.*;
+import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Payment;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.entities.Staff;
-import com.hounter.backend.business_logic.interfaces.AccountRoleService;
-import com.hounter.backend.business_logic.interfaces.AdminService;
-import com.hounter.backend.business_logic.interfaces.PaymentService;
+import com.hounter.backend.business_logic.interfaces.*;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
-import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.data_access.repositories.StaffRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -43,7 +38,9 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private StaffRepository staffRepository;
     @Autowired
-    private PostRepository postRepository;
+    private PostService postService;
+    @Autowired
+    private PostCostService postCostService;
     @Autowired
     private AccountRoleService accountRoleService;
     @Autowired
@@ -56,14 +53,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public List<CustomerRestDTO> getListCustomer(Integer pageNo, Integer pageSize) {
+    public List<CustomerListResDTO> getListCustomer(Integer pageNo, Integer pageSize) {
         Pageable pageable =  PageRequest.of(pageNo, pageSize);
         Page<Customer> customers = this.customerRepository.findAll(pageable);
-        log.info("Customer return " + customers.getSize());
         List<Customer> customerLst = customers.stream().toList();
-        List<CustomerRestDTO> response = new ArrayList<CustomerRestDTO>();
+        List<CustomerListResDTO> response = new ArrayList<>();
         for(Customer customer : customerLst){
-            response.add(CustomerMapping.adminMapping(customer));
+            response.add(CustomerMapping.adminListMapping(customer));
         }
         return response;
     }
@@ -75,7 +71,10 @@ public class AdminServiceImpl implements AdminService {
             throw new NotFoundException("Customer not found.", HttpStatus.OK);
         }
         Customer customer = optionalCustomer.get();
-        return CustomerMapping.adminMapping(customer);
+        CustomerRestDTO response =  CustomerMapping.adminMapping(customer);
+        List<ShortPostResponse> postList = this.postService.filterPostForUser(5, 0, customer, null, "", "", "", null);
+        response.setPostList(postList);
+        return response;
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -109,7 +108,8 @@ public class AdminServiceImpl implements AdminService {
         List<StaffResDTO> response = new ArrayList<StaffResDTO>();
         for(Staff staff : pageStaff){
             response.add(new StaffResDTO(staff.getId(), staff.getFull_name(), staff.getUsername(),
-                    staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(), staff.getStartDate(), staff.getIsActive()));
+                    staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(),
+                    staff.getStartDate(), staff.getIsActive() ? "Hoạt động" : "Không hoạt động"));
         }
         return response;
     }
@@ -121,8 +121,9 @@ public class AdminServiceImpl implements AdminService {
             throw new NotFoundException("Staff not found.", HttpStatus.OK);
         }
         Staff staff = optionalStaff.get();
-        return new StaffResDTO(staff.getId(), staff.getFull_name(), staff.getUsername(),
-                staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(), staff.getStartDate(), staff.getIsActive());
+//        return new StaffResDTO(staff.getId(), staff.getFull_name(), staff.getUsername(),
+//                staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(), staff.getStartDate(), staff.getIsActive());
+        return null;
     }
 
     @Override
@@ -139,19 +140,20 @@ public class AdminServiceImpl implements AdminService {
         this.staffRepository.save(staff);
         return true;
     }
+
     @Override
     public boolean updatePostStatus(Long postId, Status status){
-        Optional<Post> optionalPost = this.postRepository.findById(postId);
-        if(optionalPost.isEmpty()){
+        Post post = this.postService.findPostById(postId); 
+        if(post == null){
             throw new NotFoundException("Post not found.", HttpStatus.OK);
         }
-        Post post = optionalPost.get();
         if(post.getStatus().equals(Status.waiting) && status.equals(Status.active)){
             post.setStatus(status);
             post.setUpdateAt(LocalDate.now());
         }
         return true;
     }
+
     @Override
     public List<PaymentResAdminDTO> getPaymentsAdmin(String fromDate, String toDate, PaymentStatus status, String transactionId,
                                                      Long customerId, Long postNum, Integer pageNo, Integer pageSize){

@@ -3,6 +3,8 @@ package com.hounter.backend.business_logic.services;
 import com.google.firebase.database.*;
 import com.hounter.backend.business_logic.entities.Message;
 import com.hounter.backend.business_logic.interfaces.ChatService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ChatServiceImpl implements ChatService {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     private final FirebaseDatabase firebaseDatabase;
     public static final String CHAT_PATH = "messages";
     public ChatServiceImpl() {
@@ -58,5 +62,6 @@ public class ChatServiceImpl implements ChatService {
                 System.out.println("Message saved successfully.");
             }
         });
+        messagingTemplate.convertAndSendToUser(String.valueOf(message.getReceiverUsername()),"/message", message);
     }
 }

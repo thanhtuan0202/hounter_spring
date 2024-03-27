@@ -41,7 +41,8 @@ public class StaffServiceImpl implements StaffService {
         }
         Staff staff = optionalStaff.get();
         return new StaffResDTO(staff.getId(), staff.getFull_name(), staff.getUsername(),
-                staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(), staff.getStartDate(), staff.getIsActive());
+                staff.getPhoneNumber(), staff.getEmail(), staff.getAddress(), staff.getStartDate(),
+                staff.getIsActive() ? "Hoạt động" : "Không hoạt động");
     }
 
     @Override

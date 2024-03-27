@@ -5,6 +5,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.Objects;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 public class HounterApplication {
 
     public static void main(String[] args) throws IOException {

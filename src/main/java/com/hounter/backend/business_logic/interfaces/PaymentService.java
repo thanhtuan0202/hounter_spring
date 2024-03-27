@@ -8,6 +8,7 @@ import com.hounter.backend.business_logic.entities.PostCost;
 import com.hounter.backend.shared.enums.PaymentStatus;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PaymentService {
@@ -18,4 +19,6 @@ public interface PaymentService {
     VNPayResDTO getPaymentInfo(String orderId, String transDate, String xForwardedFor, String remoteAddr) throws IOException;
     List<Payment> getListPaymentOfCustomer(String fromDate, String toDate, PaymentStatus status, String transactionId, Long customerId, Long postNum, Integer pageNo, Integer pageSize);
     Payment getPaymentByPostNum(Long postNum);
+    void handlePaymentExpire(LocalDate date );
+    void handleRemindPayment(LocalDate date);
 }

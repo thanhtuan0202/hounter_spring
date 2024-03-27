@@ -32,7 +32,6 @@ public class PostCostServiceImpl implements PostCostService {
         Optional<Cost> op_cost = this.costRepository.findById(cost_id);
         Optional<Post> op_post = this.postRepository.findById(post_id);
         if(op_cost.isPresent() && op_post.isPresent()) {
-            Post post = op_post.get();
             Cost cost = op_cost.get();
             PostCost cost_post = new PostCost();
             cost_post.setCost(cost);
@@ -71,6 +70,7 @@ public class PostCostServiceImpl implements PostCostService {
             cost_post.setCost(cost);
             cost_post.setActiveDays(days);
             cost_post.setDate(LocalDate.now());
+            cost_post.setPost(post);
             return this.postCostRepository.save(cost_post);
         }
         else{
@@ -82,5 +82,4 @@ public class PostCostServiceImpl implements PostCostService {
     public PostCost findByPost(Post post) {
         return this.postCostRepository.findByPost(post);
     }
-
 }

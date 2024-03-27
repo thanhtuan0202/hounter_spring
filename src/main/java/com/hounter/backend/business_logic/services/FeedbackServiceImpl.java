@@ -1,6 +1,7 @@
 package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
+import com.hounter.backend.application.DTO.FeedbackDto.FeedbackDetailResponse;
 import com.hounter.backend.application.DTO.FeedbackDto.FeedbackResponse;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Feedback;
@@ -48,11 +49,11 @@ public class FeedbackServiceImpl implements FeedbackService{
     }
 
     @Override
-    public FeedbackResponse getFeedbackById(Long id){
+    public FeedbackDetailResponse getFeedbackById(Long id){
         Optional<Feedback> optionFeedback = this.feedbackRepository.findById(id);
         if(optionFeedback.isPresent()){
             Feedback feedback = optionFeedback.get();
-            return FeedbackMapping.getResponse(feedback);
+            return FeedbackMapping.getDetailResponse(feedback);
         }
         return null;
     }
@@ -61,7 +62,7 @@ public class FeedbackServiceImpl implements FeedbackService{
     public List<FeedbackResponse> getFeedbackByPost(Long postId, Integer pageSize, Integer pageNo, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         List<Feedback> feedbacks = this.feedbackRepository.findByPost_id(postId, pageable);
-        List<FeedbackResponse> responses = new ArrayList<FeedbackResponse>();
+        List<FeedbackResponse> responses = new ArrayList<>();
         for(Feedback feedback : feedbacks){
             responses.add(FeedbackMapping.getResponse(feedback));
         }

@@ -5,10 +5,13 @@ import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
 import com.hounter.backend.application.DTO.PaymentDTO.PaymentResDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
+import com.hounter.backend.business_logic.entities.Notify;
 import com.hounter.backend.business_logic.interfaces.CustomerService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
+import com.hounter.backend.business_logic.services.NotificationService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
+import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
 import com.hounter.backend.shared.utils.MappingError;
 import jakarta.validation.Valid;
@@ -27,6 +30,8 @@ import java.util.Objects;
 public class UserController {
     @Autowired
     private CustomerService userService;
+    @Autowired
+    private NotificationService notificationService;
     private final CustomUserDetailServiceImpl userDetailsService;
 
     public UserController(CustomUserDetailServiceImpl userDetailsService) {
@@ -59,9 +64,9 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "status", required = false,defaultValue = "") String status,
+            @RequestParam(value = "status", required = false,defaultValue = "") Status status,
             @RequestParam(value = "category", required = false, defaultValue = "Nhà trọ") String category,
-            @RequestParam(value = "cost", required = false, defaultValue = "0") Long cost,
+            @RequestParam(value = "cost", required = false, defaultValue = "") String cost,
             @RequestParam(value = "beginDate", required = false,defaultValue = "") String beginDate,
             @RequestParam(value = "endDate", required = false,defaultValue = "") String endDate) {
         try {
@@ -69,7 +74,7 @@ public class UserController {
             if(!Objects.equals(tokenId, userId)){
                 return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
             }
-            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1,category,cost, userId,beginDate,endDate);
+            List<ShortPostResponse> response = this.userService.getPostOfCustomer(pageSize, pageNo - 1,category,cost, userId,beginDate,endDate, status);
             if (response == null) {
                 return ResponseEntity.noContent().build();
             } else {
@@ -96,7 +101,7 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
-    
+
     @GetMapping("/{userId}/payments")
     public ResponseEntity<?> getPaymentList(@PathVariable("userId") Long userId,
                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -133,7 +138,27 @@ public class UserController {
     public ResponseEntity<?> getBalanceHistory(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok("Balance of user");
     }
-
+    @GetMapping("/{userId}/notifications")
+    public ResponseEntity<?> getNotification(@PathVariable("userId") Long userId,
+                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+                                            @RequestParam(value = "fromDate", required = false) String fromDate,
+                                            @RequestParam(value = "toDate", required = false) String toDate) {
+        try{
+            Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
+            if(!Objects.equals(tokenId, userId)){
+                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+            }
+            List<Notify> response = this.notificationService.getNotificationOfUser(userId);
+            return ResponseEntity.ok(response);
+        }
+        catch (DateTimeParseException e){
+            return new ResponseEntity<>("Invalid date format. Date must be in the format YYYY-MM-DD", HttpStatus.BAD_REQUEST);
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     @PutMapping("/{userId}")
     public ResponseEntity<?> changeCustomerInfo(@Valid @RequestBody UpdateInfoDTO userInfoDTO, BindingResult binding, @PathVariable("userId") Long userId) {
         if (binding.hasErrors()) {

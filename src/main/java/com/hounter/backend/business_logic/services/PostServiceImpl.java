@@ -143,16 +143,24 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Post findPostById(Long postId){
+        Optional<Post> post = this.postRepository.findById(postId);
+        if(post.isPresent()){
+            return post.get();
+        }
+        return null;
+    }
+    @Override
     public List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer pageNo,
-                                                     Customer customer,String category_name,Long cost_id,
-                                                     String startDate,String endDate){
+                                                     Customer customer,String category_name,String cost,
+                                                     String startDate,String endDate, Status status){
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Post> cq = cb.createQuery(Post.class);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Root<Post> post = cq.from(Post.class);
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.equal(post.get("customer"), customer));
-        if (category_name != null) {
+        if(customer != null) predicates.add(cb.equal(post.get("customer"), customer));
+        if (!Objects.equals(category_name, "")){
             Category category = this.categoryRepository.findByName(category_name);
             predicates.add(cb.equal(post.get("category"), category));
         }
@@ -162,16 +170,17 @@ public class PostServiceImpl implements PostService {
         if(!Objects.equals(endDate, "")) {
             predicates.add(cb.lessThanOrEqualTo(post.get("createAt"), LocalDate.parse(endDate, formatter)));
         }
+        if(status != null) predicates.add(cb.equal(post.get("status"), status));
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
         List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
                 .setFirstResult(pageNo * pageSize)
                 .getResultList();
         if (posts != null) {
-            if(cost_id != 0){
+            if(!Objects.equals(cost, "")){
                 List<ShortPostResponse> responses = new ArrayList<>();
                 for (Post item : posts){
-                    if(this.postCostService.findByPost(item).getCost().getId().equals(cost_id)){
+                    if(this.postCostService.findByPost(item).getCost().getName().equals(cost)){
                         responses.add(PostMapping.getShortPostResponse(item,this.postCostService.findByPost(item)));
                     }
                 }
@@ -411,5 +420,24 @@ public class PostServiceImpl implements PostService {
             return response;
         }
         return null;
+    }
+
+    @Override
+    public void handlePostExpire(LocalDate date) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Post> cq = cb.createQuery(Post.class);
+
+        Root<Post> post = cq.from(Post.class);
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(post.get("status"), Status.active));
+        predicates.add(cb.lessThanOrEqualTo(post.get("expireAt"), date));
+        cq.where(predicates.toArray(new Predicate[0]));
+        List<Post> posts = em.createQuery(cq).getResultList();
+        for (Post postItem : posts) {
+            postItem.setStatus(Status.inactive);
+            postItem.setUpdateAt(LocalDate.now());
+            this.postRepository.save(postItem);
+        }
+        log.info("Checking post expiration...done with " + posts.size() + " posts");
     }
 }

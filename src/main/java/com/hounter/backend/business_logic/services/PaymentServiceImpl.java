@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hounter.backend.application.DTO.PaymentDTO.CreatePaymentDTO;
 import com.hounter.backend.application.DTO.VNPayResDTO;
-import com.hounter.backend.business_logic.entities.Cost;
-import com.hounter.backend.business_logic.entities.Payment;
-import com.hounter.backend.business_logic.entities.Post;
-import com.hounter.backend.business_logic.entities.PostCost;
+import com.hounter.backend.business_logic.entities.*;
 import com.hounter.backend.business_logic.interfaces.PaymentService;
 import com.hounter.backend.config.VnpayConfig;
 import com.hounter.backend.data_access.repositories.PaymentRepository;
@@ -23,7 +20,9 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
@@ -47,6 +47,10 @@ public class PaymentServiceImpl implements PaymentService {
     private PostRepository postRepository;
     @Autowired
     private PostCostRepository postCostRepository;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @PersistenceContext
     protected EntityManager em;
     public PaymentServiceImpl() throws UnknownHostException {
@@ -85,6 +89,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(PaymentStatus.PENDING);
         this.paymentRepository.save(payment); 
     }
+
     @Override
     public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
@@ -100,6 +105,9 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentMethod(bankCode);
         post.setStatus(Status.active);
         post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
+        Notify notify = new Notify(NotificationService.TITLE_COMPLETE, "", String.format(NotificationService.CONTENT_COMPLETE, payment.getPaymentId()),
+                LocalDate.now().toString(), false, post.getCustomer().getId().intValue());
+        this.notificationService.createNotification(notify);
         this.paymentRepository.save(payment);
     }
 
@@ -185,6 +193,7 @@ public class PaymentServiceImpl implements PaymentService {
         String paymentUrl = VnpayConfig.vnp_PayUrl + "?" + queryUrl;
         return new CreatePaymentDTO(paymentUrl, "Ok", "Successfully");
     }
+
     @Override
     public VNPayResDTO getPaymentInfo(String orderId, String vnp_TransDate, String xForwardedFor, String remoteAddr) throws IOException {
         String vnp_RequestId = VnpayConfig.getRandomNumber(8);
@@ -281,4 +290,38 @@ public class PaymentServiceImpl implements PaymentService {
         return this.paymentRepository.findByPostNum(postNum);
     }
 
+    @Override
+    public void handlePaymentExpire(LocalDate date) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
+        Root<Payment> paymentRoot = cq.from(Payment.class);
+        cq.select(paymentRoot).where(cb.lessThanOrEqualTo(paymentRoot.get("expireAt"), date), cb.equal(paymentRoot.get("status"), PaymentStatus.PENDING));
+        List<Payment> payments = em.createQuery(cq).getResultList();
+        for(Payment payment: payments){
+            payment.setStatus(PaymentStatus.EXPIRED);
+            this.paymentRepository.save(payment);
+            Post post = payment.getPostCost().getPost();
+            post.setStatus(Status.delete);
+            post.setUpdateAt(LocalDate.now());
+            this.postRepository.save(post);
+            Notify notify = new Notify(NotificationService.TITLE_EXPIRED, "",
+                    String.format(NotificationService.CONTENT_EXPIRED, payment.getPostNum()),
+                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
+            this.notificationService.createNotification(notify);
+            this.messagingTemplate.convertAndSendToUser(payment.getCustomer().getUsername(), "/user/notify", notify);
+        }
+        log.info("Checking payment expiration... done with " + payments.size() + " payments.");
+    }
+
+    @Override
+    public void handleRemindPayment(LocalDate date) {
+        List<Payment> payments = this.paymentRepository.findByExpireAtAndStatus(date.minusDays(1), PaymentStatus.PENDING);
+        for (Payment payment : payments) {
+            Notify notify = new Notify(NotificationService.TITLE_PENDING, "",
+                    String.format(NotificationService.CONTENT_PENDING, payment.getTotalPrice(),payment.getExpireAt()),
+                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
+            this.notificationService.createNotification(notify);
+        }
+        log.info("Checking payment expiration... done with " + payments.size() + " payments.");
+    }
 }

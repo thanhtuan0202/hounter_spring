@@ -1,5 +1,6 @@
 package com.hounter.backend.application.controllers;
 
+import com.hounter.backend.business_logic.entities.Notify;
 import com.hounter.backend.business_logic.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,19 +12,16 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping
-    public ResponseEntity<?> getNotification(){
-        this.notificationService.getDateTest();
-        return ResponseEntity.ok("Success");
-    }
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getNotificationByUserId(@PathVariable("userId") Long userId){
-        return ResponseEntity.ok("Success");
-    }
 
     @PostMapping()
     public ResponseEntity<?> addNotification(){
-        return ResponseEntity.ok("Success");
+        try{
+            Notify notify = new Notify("subject", "directObject", "content", "createAt", true, 52);
+            this.notificationService.createNotification(notify);
+            return ResponseEntity.ok("Notification created successfully!");
+        }
+        catch (Exception e){
+            return ResponseEntity.status(500).body("Something went wrong!");
+        }
     }
 }

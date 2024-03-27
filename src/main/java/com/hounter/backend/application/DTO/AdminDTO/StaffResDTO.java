@@ -19,5 +19,5 @@ public class StaffResDTO {
     private String email;
     private String address;
     private LocalDate startDate;
-    private boolean isActive;
+    private String isActive;
 }

@@ -415,7 +415,7 @@ public class PostServiceImpl implements PostService {
         if(postOptional.isPresent()){
             Post post = postOptional.get();
             PostOfUserRes response = PostMapping.PostOfUserMapping(post);
-            response.setCost(new PostCostRes(this.postCostService.findByPost(post).getCost().getId(),
+            response.setCost(new PostCostRes(this.postCostService.findByPost(post).getCost().getName(),
                     this.postCostService.findByPost(post).getActiveDays()));
             return response;
         }

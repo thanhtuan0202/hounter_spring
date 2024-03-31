@@ -1,10 +1,5 @@
 package com.hounter.backend.business_logic.mapper;
 
-import java.time.LocalDate;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-
 import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.PostDto.CreatePostDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
@@ -15,11 +10,15 @@ import com.hounter.backend.business_logic.entities.PostCost;
 import com.hounter.backend.business_logic.entities.PostImage;
 import com.hounter.backend.shared.enums.Status;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 public class PostMapping {
     public static ShortPostResponse getShortPostResponse(Post post, PostCost cost) {
         Set<PostImage> images = post.getPostImages();
         List<PostImage> lst = new ArrayList<>(images);
-        
         return new ShortPostResponse(
             post.getId(),
             post.getTitle(),
@@ -116,13 +115,14 @@ public class PostMapping {
         postDetail.setDescription(post.getDescription());
         postDetail.setPrice(post.getPrice());
         postDetail.setArea(post.getArea());
-        postDetail.setCategory(post.getCategory().getId());
+        postDetail.setCategory(post.getCategory().getName());
         postDetail.setFullAddress(post.getFullAdress());
         postDetail.setCity(post.getCity());
         postDetail.setCounty(post.getCounty());
         postDetail.setDistrict(post.getDistrict());
         postDetail.setOwnerName(post.getCustomerName());
         postDetail.setOwnerPhone(post.getCustomerPhone());
+        postDetail.setNotes(post.getNotes());
         Set<PostImage> images = post.getPostImages();
         List<PostImage> lst = new ArrayList<>(images);
         List<String> img = new ArrayList<String>();

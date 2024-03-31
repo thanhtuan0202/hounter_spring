@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostCostRes {
-    private Long costId;
+    private String costName;
     private Integer activeDay;
 }

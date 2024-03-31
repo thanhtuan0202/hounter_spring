@@ -24,6 +24,9 @@ public class Staff extends Account {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Column(name = "start_date")
     private LocalDate startDate;
     

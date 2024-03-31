@@ -4,12 +4,16 @@ import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.business_logic.entities.Payment;
 import com.hounter.backend.business_logic.interfaces.AdminService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
+import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
+import com.hounter.backend.shared.utils.MappingError;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeParseException;
@@ -124,7 +128,14 @@ public class AdminController {
     }
 
     @PostMapping("/staffs")
-    public ResponseEntity<?> createStaffAccount(@RequestBody CreateStaffDTO createStaffDTO){
+    public ResponseEntity<?> createStaffAccount(@Valid @RequestBody CreateStaffDTO createStaffDTO, BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            List<BindingBadRequest> response = MappingError.mappingError(bindingResult);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        if(!createStaffDTO.getPassword().equals(createStaffDTO.getConfirmPassword())){
+            return new ResponseEntity<>("Password and confirm password do not match.", HttpStatus.BAD_REQUEST);
+        }
         try{
             boolean isCreated = this.adminService.createStaff(createStaffDTO);
             if(isCreated){

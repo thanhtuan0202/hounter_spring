@@ -95,6 +95,7 @@ public class AdminServiceImpl implements AdminService {
         newStaff.setStartDate(LocalDate.now());
         newStaff.setCreateAt(LocalDate.now());
         newStaff.setUpdateAt(LocalDate.now());
+        newStaff.setBirthDate(createStaffDTO.getDob());
         newStaff.setIsActive(true);
         this.staffRepository.save(newStaff);
         this.accountRoleService.enrollAccountToRole(newStaff.getId(), "STAFF");

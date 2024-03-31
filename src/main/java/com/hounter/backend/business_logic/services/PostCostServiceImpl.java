@@ -62,10 +62,9 @@ public class PostCostServiceImpl implements PostCostService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public PostCost enrollPostToCost(Post post, Long cost_id, Integer days) {
-        Optional<Cost> op_cost = this.costRepository.findById(cost_id);
-        if(op_cost.isPresent()) {
-            Cost cost = op_cost.get();
+    public PostCost enrollPostToCost(Post post, String costName, Integer days) {
+        Cost cost = this.costRepository.findByName(costName);
+        if(cost != null) {
             PostCost cost_post = new PostCost();
             cost_post.setCost(cost);
             cost_post.setActiveDays(days);

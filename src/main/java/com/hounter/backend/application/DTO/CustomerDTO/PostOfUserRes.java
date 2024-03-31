@@ -1,9 +1,10 @@
 package com.hounter.backend.application.DTO.CustomerDTO;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,7 +21,8 @@ public class PostOfUserRes {
     private String district;
     private String ownerName;
     private String ownerPhone;
-    private Long category;
+    private String category;
     private PostCostRes cost;
+    private String notes;
     private List<String> imageList;
 }

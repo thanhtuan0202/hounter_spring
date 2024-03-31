@@ -1,12 +1,12 @@
 package com.hounter.backend.application.DTO.PostDto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.List;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,13 +17,13 @@ public class CreatePostDto {
     @NotBlank(message = "Không được để trống")
     private String description;
 
-    @NotBlank(message = "Field must not be null")
+    @NotBlank(message = "Không được để trống")
     private String category;
 
-    @NotNull(message = "Field must not be null")
+    @NotNull(message = "Không được để trống")
     private Integer price;
 
-    @NotNull(message = "Field must not be null")
+    @NotNull(message = "Không được để trống")
     private Integer area;
 
     @NotBlank(message = "Không được để trống")
@@ -47,10 +47,10 @@ public class CreatePostDto {
     @Pattern(regexp = "^\\d{10}$", message = "Must have 10 digit")
     private String customerPhone;
 
-    @NotNull(message = "Field must not be null")
-    private Long cost;
+    @NotBlank(message = "Không được để trống")
+    private String cost;
 
-    @NotNull(message = "Field must not be null")
+    @NotNull(message = "Không được để trống")
     private Integer days;
 
     private String note;

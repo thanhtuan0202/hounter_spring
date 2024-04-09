@@ -35,4 +35,5 @@ public interface PostService {
     List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo,Long postId);
     boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;
     boolean changeStatus_Staff(Long postId, String status, Long staffId);
+    List <SummaryPostDTO> findAvancedPost(FindPostDTO findPostDTO);
 }

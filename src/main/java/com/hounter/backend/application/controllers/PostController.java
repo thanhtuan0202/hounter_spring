@@ -227,4 +227,18 @@ public class PostController {
 //        return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
         return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
     }
+
+    @GetMapping("/find_post")
+    public ResponseEntity<?> findPost(@Valid @ModelAttribute FindPostDTO findPostDTO, BindingResult binding) {
+        if (binding.hasErrors()) {
+            List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
+            return ResponseEntity.badRequest().body(error_lst);
+        }
+        try {
+            List<SummaryPostDTO> response = this.postService.findAvancedPost(findPostDTO);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

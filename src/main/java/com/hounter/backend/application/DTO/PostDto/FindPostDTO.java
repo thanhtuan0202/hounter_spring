@@ -5,14 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
 
-import jakarta.validation.constraints.NotBlank;
+import com.hounter.backend.shared.utils.FindPointsAddress;
 
 @Setter
 @Getter
 @NoArgsConstructor
 public class FindPostDTO {
-    @NotBlank
-    public String address;
     public Integer area;
-    public List <String> extension;
+    public List <FindPointsAddress.LatLng> points;
 }

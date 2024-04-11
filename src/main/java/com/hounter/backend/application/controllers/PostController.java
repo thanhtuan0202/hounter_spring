@@ -228,8 +228,8 @@ public class PostController {
         return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
     }
 
-    @GetMapping("/find_post")
-    public ResponseEntity<?> findPost(@Valid @ModelAttribute FindPostDTO findPostDTO, BindingResult binding) {
+    @PostMapping("/find_post")
+    public ResponseEntity<?> findPost(@Valid @RequestBody FindPostDTO findPostDTO, BindingResult binding) {
         if (binding.hasErrors()) {
             List<BindingBadRequest> error_lst = MappingError.mappingError(binding);
             return ResponseEntity.badRequest().body(error_lst);

@@ -459,16 +459,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public List <SummaryPostDTO> findAvancedPost(FindPostDTO findPostDTO){
         try {
-            FindPointMapbox findPointMapbox = new FindPointMapbox();
-            FindPointsAddress.LatLng latLng = findPointMapbox.getAddressPoints(findPostDTO.getAddress());
-            // not implement extension 
+            List <FindPointsAddress.LatLng> points = findPostDTO.getPoints();
             Integer area = findPostDTO.getArea() == null ? 5 : findPostDTO.getArea();
             List <Post> posts = this.postRepository.findAll();
             List <Post> res = new ArrayList<>();
             for (Post post : posts) {
                 FindPointsAddress.LatLng postLatLng = new FindPointsAddress.LatLng(post.getLatitude().floatValue(), post.getLongitude().floatValue());
-                if (LngLatToDistance(latLng, postLatLng) < area) {
-                    res.add(post);
+                for (FindPointsAddress.LatLng latLng : points) {
+                    if (LngLatToDistance(latLng, postLatLng) < area) {
+                        res.add(post);
+                        break;
+                    }
                 }
             }
             List <SummaryPostDTO> responses = new ArrayList<>();

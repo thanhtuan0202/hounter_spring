@@ -1,5 +1,6 @@
 package com.hounter.backend.business_logic.services;
 
+import com.google.type.LatLng;
 import com.hounter.backend.application.DTO.CustomerDTO.PostCostRes;
 import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
@@ -439,5 +440,47 @@ public class PostServiceImpl implements PostService {
             this.postRepository.save(postItem);
         }
         log.info("Checking post expiration...done with " + posts.size() + " posts");
+    }
+
+    public static Float LngLatToDistance(FindPointsAddress.LatLng point1, FindPointsAddress.LatLng point2) {
+        double R = 6371;
+        double lat1 = point1.getLat();
+        double lon1 = point1.getLng();
+        double lat2 = point2.getLat();
+        double lon2 = point2.getLng();
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return (float) (R * c);
+    }
+
+    @Override
+    public List <SummaryPostDTO> findAvancedPost(FindPostDTO findPostDTO){
+        try {
+            List <FindPointsAddress.LatLng> points = findPostDTO.getPoints();
+            Integer area = findPostDTO.getArea() == null ? 5 : findPostDTO.getArea();
+            List <Post> posts = this.postRepository.findByStatus(Status.active);
+            List <Post> res = new ArrayList<>();
+            for (Post post : posts) {
+                FindPointsAddress.LatLng postLatLng = new FindPointsAddress.LatLng(post.getLatitude().floatValue(), post.getLongitude().floatValue());
+                for (FindPointsAddress.LatLng latLng : points) {
+                    if (LngLatToDistance(latLng, postLatLng) < area) {
+                        res.add(post);
+                        break;
+                    }
+                }
+            }
+            List <SummaryPostDTO> responses = new ArrayList<>();
+            for (Post post : res) {
+                responses.add(new SummaryPostDTO(post));
+            }
+            return responses;
+        }
+        catch (Exception e){
+            log.error("Cannot find address");
+            return null;
+        }
     }
 }

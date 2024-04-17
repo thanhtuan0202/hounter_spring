@@ -67,6 +67,7 @@ public class SecurityConfig {
                                 .requestMatchers("/categories/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/posts/{id}/feedbacks").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET,"/posts/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/posts/find_post").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/posts/find_address").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/posts/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.PATCH,"/posts/**").hasRole("USER")

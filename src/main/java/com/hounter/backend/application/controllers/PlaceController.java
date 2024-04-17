@@ -34,11 +34,11 @@ public class PlaceController {
     public ResponseEntity<?> getPlaces(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "district", defaultValue = "") String district,
+            @RequestParam(value = "wardId", defaultValue = "1") Integer ward,
             @RequestParam(value =  "type") PlaceType type
     ){
         try{
-            List<PlaceDTO> response = this.placeService.getAllPlaces(pageSize, pageNo - 1, district, type);
+            List<PlaceDTO> response = this.placeService.getAllPlaces(pageSize, pageNo - 1, ward, type);
             return ResponseEntity.ok(response);
         }
         catch (Exception e){

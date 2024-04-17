@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+import com.hounter.backend.application.DTO.AddressDTO;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,10 +17,7 @@ public class PostOfUserRes {
     private String description;
     private Integer price;
     private Integer area;
-    private String fullAddress;
-    private String city;
-    private String county;
-    private String district;
+    private AddressDTO.AddressResDTO address;
     private String ownerName;
     private String ownerPhone;
     private String category;

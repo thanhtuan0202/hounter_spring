@@ -27,16 +27,10 @@ public class UpdatePostDTO {
     private Integer area;
 
     @NotBlank(message = "Không được để trống")
-    private String fullAddress;
+    private String street;
 
-    @NotBlank(message = "Không được để trống")
-    private String city;
-
-    @NotBlank(message = "Không được để trống")
-    private String county;
-
-    @NotBlank(message = "Không được để trống")
-    private String district;
+    @NotNull
+    private Integer wardId;
 
     @NotNull(message = "Không được để trống")
     private Long cost;

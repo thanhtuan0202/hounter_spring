@@ -1,6 +1,5 @@
 package com.hounter.backend.business_logic.services;
 
-import com.google.type.LatLng;
 import com.hounter.backend.application.DTO.CustomerDTO.PostCostRes;
 import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.FeedbackDto.CreateFeedback;
@@ -12,9 +11,11 @@ import com.hounter.backend.business_logic.interfaces.PostCostService;
 import com.hounter.backend.business_logic.interfaces.PostImageService;
 import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.mapper.PostMapping;
+import com.hounter.backend.data_access.repositories.AddressRepository;
 import com.hounter.backend.data_access.repositories.CategoryRepository;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
+import com.hounter.backend.data_access.repositories.WardRepository;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
@@ -54,6 +55,12 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private WardRepository wardRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
 
     @Autowired
     private PostImageService postImageService;
@@ -196,6 +203,14 @@ public class PostServiceImpl implements PostService {
         return this.feedbackService.getFeedbackByPost(postId,pageSize, pageNo, "createAt", "desc");
     }
 
+    public Address getAddress(String street, Integer wardId) throws CategoryNotFoundException{
+        Optional<Ward> opWard = this.wardRepository.findByCode(wardId);
+        if(opWard.isEmpty()){
+            throw new CategoryNotFoundException("Cannot find ward with name " + wardId);
+        }
+        return new Address(street, opWard.get());
+    }
+
     @Override
     @Transactional(rollbackFor = { Exception.class })
     public PostResponse createPost(CreatePostDto createPostDTO, Long userId) throws Exception {
@@ -212,9 +227,13 @@ public class PostServiceImpl implements PostService {
         } else {
             throw new CategoryNotFoundException("Cannot find category with name " + createPostDTO.getCategory());
         }
-        FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(createPostDTO.getFullAddress());
+
+        Address address = getAddress(createPostDTO.getStreet(), createPostDTO.getWardId());
+        this.addressRepository.save(address);
+        FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(address.toString());
         post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
         post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
+        post.setAddress(address);
         Post saved_post = this.postRepository.save(post);
         PostCost postCost = this.postCostService.enrollPostToCost(saved_post, createPostDTO.getCost(),
                 createPostDTO.getDays());
@@ -237,11 +256,7 @@ public class PostServiceImpl implements PostService {
                 post.setTitle(updatePostDTO.getTitle());
                 post.setDescription(updatePostDTO.getDescription());
                 post.setPrice(updatePostDTO.getPrice());
-                post.setCity(updatePostDTO.getCity());
-                post.setCounty(updatePostDTO.getCounty());
-                post.setDistrict(updatePostDTO.getDistrict());
                 post.setUpdateAt(LocalDate.now());
-                post.setFullAdress(updatePostDTO.getFullAddress());
                 Category category = this.categoryRepository.findByName(updatePostDTO.getCategory());
                 if (category != null) {
                     post.setCategory(category);
@@ -254,9 +269,21 @@ public class PostServiceImpl implements PostService {
                 this.paymentService.savePaymentOfPost(payment, postCost);
                 this.postImageService.storeImageOfPost(post, updatePostDTO.getAddImages());
                 this.postImageService.deleteImageOfPost(post, updatePostDTO.getDeleteImages());
-                FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(updatePostDTO.getFullAddress());
+
+                Optional<Ward> opWard = this.wardRepository.findByCode(updatePostDTO.getWardId());
+                if(opWard.isEmpty()){
+                    throw new CategoryNotFoundException("Cannot find ward with name " + updatePostDTO.getWardId());
+                }
+                Address address = post.getAddress();
+                address.setStreet(updatePostDTO.getStreet());
+                address.setWard(opWard.get());
+                address.setDistrict(opWard.get().getDistrict());
+                address.setProvince(opWard.get().getDistrict().getProvince());
+                
+                FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(address.toString());
                 post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
                 post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
+                this.addressRepository.save(address);
                 Post saved_post = this.postRepository.save(post);
                 return PostMapping.PostResponseMapping(saved_post);
             }

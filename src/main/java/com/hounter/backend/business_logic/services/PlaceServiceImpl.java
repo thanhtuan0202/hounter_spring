@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.hounter.backend.business_logic.interfaces.PlaceService;
 import com.hounter.backend.data_access.repositories.PlaceRepository;
-
+import com.hounter.backend.shared.enums.PlaceType;
 import com.hounter.backend.application.DTO.PlaceDTO;
 import com.hounter.backend.business_logic.entities.Place;
 
@@ -21,9 +21,15 @@ public class PlaceServiceImpl implements PlaceService{
     private PlaceRepository placeRepository;
 
     @Override
-    public List<PlaceDTO> getAllPlaces(Integer pageSize, Integer pageNo, String district) {
+    public List<PlaceDTO> getAllPlaces(Integer pageSize, Integer pageNo, String district, PlaceType type) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        List<Place> places = placeRepository.findByDistrict(district, pageable);
+        List<Place> places;
+        if (type == null) {
+            places = placeRepository.findByDistrict(district, pageable);
+        }
+        else {
+            places = placeRepository.findByTypeAndDistrict(district, type, pageable);
+        }
         List<PlaceDTO> placeDTOs = new ArrayList<>();
         for (Place place : places) {
             placeDTOs.add(new PlaceDTO(place));

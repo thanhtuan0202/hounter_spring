@@ -1,5 +1,7 @@
 package com.hounter.backend.business_logic.entities;
 
+import com.hounter.backend.shared.enums.PlaceType;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,17 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-enum Type {
-    MARKET, 
-    SUPERMARKET,
-    HOSPITAL,
-    HIGHER_SCHOOL,
-    SECONDARY_SCHOOL,
-    PRIMARY_SCHOOL,
-    COMMERCIAL_CENTER,
-    GROCERY_STORE
-}
-
 @Getter
 @Setter
 @Entity
@@ -30,7 +21,7 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     @NotNull
-    Type type;
+    PlaceType type;
     @NotBlank
     String name;
     @NotBlank
@@ -47,6 +38,6 @@ public class Place {
     }
     
     public void setType(String type) {
-        this.type = Type.valueOf(type);
+        this.type = PlaceType.valueOf(type);
     }
 }

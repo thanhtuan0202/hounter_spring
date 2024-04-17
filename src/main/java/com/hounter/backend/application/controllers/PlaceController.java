@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hounter.backend.application.DTO.PlaceDTO;
 import com.hounter.backend.business_logic.interfaces.PlaceService;
+import com.hounter.backend.shared.enums.PlaceType;
 import com.hounter.backend.shared.utils.FindPointMapbox;
 
 @RestController
@@ -33,10 +34,11 @@ public class PlaceController {
     public ResponseEntity<?> getPlaces(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "district", defaultValue = "") String district
+            @RequestParam(value = "district", defaultValue = "") String district,
+            @RequestParam(value =  "type") PlaceType type
     ){
         try{
-            List<PlaceDTO> response = this.placeService.getAllPlaces(pageSize, pageNo - 1, district);
+            List<PlaceDTO> response = this.placeService.getAllPlaces(pageSize, pageNo - 1, district, type);
             return ResponseEntity.ok(response);
         }
         catch (Exception e){

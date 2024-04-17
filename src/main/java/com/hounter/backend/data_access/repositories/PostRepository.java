@@ -15,6 +15,7 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatus(Status status, Pageable page);
+    List<Post> findByStatus(Status status);
     List<Post> findByStatusAndCategory(Status status, Category category, Pageable page);
     List<Post> findByCustomer(Customer customer, Pageable page);
     List<Post> findByCustomerAndStatus(Customer customer, Status status, Pageable page);

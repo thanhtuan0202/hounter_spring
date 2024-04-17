@@ -461,7 +461,7 @@ public class PostServiceImpl implements PostService {
         try {
             List <FindPointsAddress.LatLng> points = findPostDTO.getPoints();
             Integer area = findPostDTO.getArea() == null ? 5 : findPostDTO.getArea();
-            List <Post> posts = this.postRepository.findAll();
+            List <Post> posts = this.postRepository.findByStatus(Status.active);
             List <Post> res = new ArrayList<>();
             for (Post post : posts) {
                 FindPointsAddress.LatLng postLatLng = new FindPointsAddress.LatLng(post.getLatitude().floatValue(), post.getLongitude().floatValue());

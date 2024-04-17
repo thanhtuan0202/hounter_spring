@@ -72,7 +72,7 @@ public class AdminServiceImpl implements AdminService {
         }
         Customer customer = optionalCustomer.get();
         CustomerRestDTO response =  CustomerMapping.adminMapping(customer);
-        List<ShortPostResponse> postList = this.postService.filterPostForUser(5, 0, customer, null, "", "", "", null);
+        List<ShortPostResponse> postList = this.postService.filterPostForUser(5, 0, customer, "", "", "", "", null);
         response.setPostList(postList);
         return response;
     }

@@ -48,18 +48,6 @@ public class Post {
     @Column(name = "status", nullable = false)
     private Status status = Status.waiting;
 
-    @Column(name = "full_address", nullable = false)
-    private String fullAdress;
-
-    @Column(name = "city", nullable = false)
-    private String city;
-
-    @Column(name = "county", nullable = false)
-    private String county;
-
-    @Column(name = "district", nullable = false)
-    private String district;
-
     @Column(name = "latitude", precision = 10, scale = 8)
     @Digits(integer=2, fraction=8)
     private BigDecimal latitude;
@@ -93,4 +81,8 @@ public class Post {
 
     @OneToMany(mappedBy = "post")
     private Set<PostImage> postImages;
+
+    @OneToOne
+    @JoinColumn(name="address_id", referencedColumnName = "id", nullable = false)
+    private Address address;
 }

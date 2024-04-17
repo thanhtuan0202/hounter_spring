@@ -1,5 +1,6 @@
 package com.hounter.backend.application.DTO.PostDto;
 
+import com.hounter.backend.application.DTO.AddressDTO;
 import com.hounter.backend.shared.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,10 +22,7 @@ public class PostResponse {
     private String description;
     private Integer price;
     private Integer area;
-    private String fullAddress;
-    private String city;
-    private String county;
-    private String district;
+    private AddressDTO.AddressResDTO address;
     private String ownerName;
     private String ownerPhone;
     private LocalDate createAt;

@@ -11,9 +11,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.TermVector;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+
+
 
 
 @Entity
@@ -30,11 +31,11 @@ public class Post {
     private Long id;
 
     @Column(name = "title", nullable = false)
-    @Field(termVector = TermVector.YES)
+    @FullTextField
     private String title;
 
+    @FullTextField
     @Column(name = "description", nullable = false,length = 10000)
-    @Field(termVector = TermVector.YES)
     private String description;
 
     @Column(name = "price", nullable = false)

@@ -20,6 +20,10 @@ public class PostMapping {
     public static ShortPostResponse getShortPostResponse(Post post, PostCost cost) {
         Set<PostImage> images = post.getPostImages();
         List<PostImage> lst = new ArrayList<>(images);
+        String imageUrl = null;
+        if (!lst.isEmpty()) {
+            imageUrl = lst.get(0).getImageUrl();
+        }
         return new ShortPostResponse(
             post.getId(),
             post.getTitle(),
@@ -33,7 +37,7 @@ public class PostMapping {
             post.getCategory().getId(),
             cost.getCost().getName(),
             post.getStatus(),
-            lst.get(0).getImageUrl()
+            imageUrl
         );
     }
 

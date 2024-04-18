@@ -30,6 +30,11 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
+
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +43,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.lucene.search.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import java.util.ArrayList;
 
 @Service
@@ -81,6 +88,9 @@ public class PostServiceImpl implements PostService {
     private FindPointMapbox findPointMapbox;
     @PersistenceContext
     protected EntityManager em;
+
+    @Autowired
+    javax.persistence.EntityManager entityManager;
 
     @Override
     public PostResponse getPostById(Long postId, boolean isUser) {
@@ -328,16 +338,12 @@ public class PostServiceImpl implements PostService {
         Root<Post> post = cq.from(Post.class);
         List<Predicate> predicates = new ArrayList<>();
 
-        if (filter.getCity() != null) {
-            predicates.add(cb.equal(post.get("city"), filter.getCity()));
-        }
-
-        if (filter.getCounty() != null) {
-            predicates.add(cb.equal(post.get("county"), filter.getCounty()));
-        }
-        if (filter.getDistrict() != null) {
-            predicates.add(cb.equal(post.get("district"), filter.getDistrict()));
-        }
+        if (filter.getWardId() != null) {
+            Optional<Ward> ward = this.wardRepository.findByCode(filter.getWardId());
+            if (!ward.isEmpty()) {
+                predicates.add(cb.equal(post.get("address").get("ward"), ward.get()));
+            }
+        } 
         if (filter.getUpperPrice() != null) {
             predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getUpperPrice()));
         }
@@ -349,6 +355,9 @@ public class PostServiceImpl implements PostService {
         }
         if (filter.getStatus() != null) {
             predicates.add(cb.equal(post.get("status"), filter.getStatus()));
+        }
+        else {
+            predicates.add(cb.equal(post.get("status"), Status.active));
         }
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
@@ -373,8 +382,35 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q){
-        return null;
+    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q) throws Exception {
+        
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+
+        fullTextEntityManager.createIndexer().startAndWait();
+        
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
+        .buildQueryBuilder()
+        .forEntity(Post.class)
+        .get();
+
+        Query query = queryBuilder
+                .keyword()
+                .onFields("title", "content")
+                .matching(q)
+                .createQuery();
+
+        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, Post.class);
+
+        jpaQuery.setFirstResult(pageNo * pageSize);
+        jpaQuery.setMaxResults(pageSize);
+
+        List<Post> postResult = jpaQuery.getResultList();
+        List<ShortPostResponse> responses = new ArrayList<>();
+        for(Post post : postResult){
+            responses.add(PostMapping.getShortPostResponse(post,this.postCostService.findByPost(post)));
+        }
+        return responses;
+
     }
 
     @Override

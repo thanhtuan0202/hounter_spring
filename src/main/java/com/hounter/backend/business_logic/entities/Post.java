@@ -11,9 +11,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.TermVector;
+
 
 @Entity
 @Table(name = "posts")
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,9 +30,11 @@ public class Post {
     private Long id;
 
     @Column(name = "title", nullable = false)
+    @Field(termVector = TermVector.YES)
     private String title;
 
     @Column(name = "description", nullable = false,length = 10000)
+    @Field(termVector = TermVector.YES)
     private String description;
 
     @Column(name = "price", nullable = false)

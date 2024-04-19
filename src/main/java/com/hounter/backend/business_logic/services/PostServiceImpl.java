@@ -382,7 +382,7 @@ public class PostServiceImpl implements PostService {
     public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q)
             throws Exception {
 
-        return this.postRepository.search(q, em).stream()
+        return this.postRepository.search(q, em).stream().filter(post -> post.getStatus() == Status.active)
                 .map(post -> PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post))).toList();
 
     }

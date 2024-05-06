@@ -48,7 +48,7 @@ public class NotifyService {
 
     public List<NotifyDTO> getNotifies() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long accountId = ((Account) principal).getId();
+        Long accountId = ((CustomUserDetail) principal).getUserId();
         Optional <Account> account = accountRepository.findById(accountId);
         if (!account.isPresent()) {
             throw new RuntimeException("Account not found");
@@ -98,7 +98,7 @@ public class NotifyService {
         notify.setAccount(adminAccount.get());
         notify.setSubject(currentAccount.getUsername());
         notify.setVerb(NotifyVerb.REQUEST_DELETE);
-        notify.setDirectObject("Tài khoản" + account.getUsername());
+        notify.setDirectObject("Tài khoản " + account.getUsername());
         notify.setRedirectType(NotifyRedirectType.ACCOUNT);
         notify.setRedirectId(account.getId());
         notifyRepository.save(notify);
@@ -115,7 +115,7 @@ public class NotifyService {
         notify.setAccount(adminAccount.get());
         notify.setSubject(currentAccount.getUsername());
         notify.setVerb(NotifyVerb.REQUEST_DELETE);
-        notify.setDirectObject("Bài viết" + post.getId());
+        notify.setDirectObject("Bài viết " + post.getId());
         notify.setRedirectType(NotifyRedirectType.POST);
         notify.setRedirectId(post.getId());
         notifyRepository.save(notify);

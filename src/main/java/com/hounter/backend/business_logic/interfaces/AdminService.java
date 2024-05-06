@@ -17,7 +17,7 @@ public interface AdminService {
     boolean createStaff(CreateStaffDTO createStaffDTO);
     List<StaffResDTO> getListStaff(Integer pageNo, Integer pageSize);
     StaffResDTO getStaffInfo(Long staffId);
-    boolean deleteStaff(Long staffId);
+    boolean deleteAccount(Long accountId);
     boolean updatePostStatus(Long postId, Status status);
     List<PaymentResAdminDTO> getPaymentsAdmin(String fromDate, String toDate, PaymentStatus status, String transactionId, Long customerId, Long postNum, Integer pageNo, Integer pageSize);
     Payment getPaymentInfo(Long paymentId);

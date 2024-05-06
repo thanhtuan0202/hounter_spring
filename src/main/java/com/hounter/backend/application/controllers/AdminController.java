@@ -153,17 +153,30 @@ public class AdminController {
     @PatchMapping("/posts/{postId}")
     public ResponseEntity<?> updatePostStatus(
             @PathVariable("postId") Long postId,
-            @RequestBody Status status
+            @Valid @RequestBody Status status
     ){
-
-        return null;
-    }
-    @DeleteMapping("/staffs/{staffId}")
-    public ResponseEntity<?> deleteStaffAccount(@PathVariable("staffId") Long staffId){
         try{
-            boolean isDeleted = this.adminService.deleteStaff(staffId);
+            boolean isUpdated = this.adminService.updatePostStatus(postId, status);
+            if(isUpdated){
+                return ResponseEntity.ok("Post status updated successfully.");
+            }
+            else{
+                return ResponseEntity.ok("Post status not updated.");
+            }
+        }
+        catch (NotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @DeleteMapping("/account/{accountId}")
+    public ResponseEntity<?> deleteStaffAccount(@PathVariable("accountId") Long accountId){
+        try{
+            boolean isDeleted = this.adminService.deleteAccount(accountId);
             if(isDeleted){
-                return ResponseEntity.ok("Staff delete successfully.");
+                return ResponseEntity.ok("Account delete successfully.");
             }
             else{
                 return ResponseEntity.ok("Something went wrong.");

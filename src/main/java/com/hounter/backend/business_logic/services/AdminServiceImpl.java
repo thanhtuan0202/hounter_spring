@@ -12,6 +12,7 @@ import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
 import com.hounter.backend.data_access.repositories.AccountRepository;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
+import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.data_access.repositories.StaffRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -49,6 +50,9 @@ public class AdminServiceImpl implements AdminService {
     private PaymentService paymentService;
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -152,10 +156,9 @@ public class AdminServiceImpl implements AdminService {
         if(post == null){
             throw new NotFoundException("Post not found.", HttpStatus.OK);
         }
-        if(post.getStatus().equals(Status.waiting) && status.equals(Status.active)){
-            post.setStatus(status);
-            post.setUpdateAt(LocalDate.now());
-        }
+        post.setStatus(status);
+        post.setUpdateAt(LocalDate.now());
+        this.postRepository.save(post);
         return true;
     }
 

@@ -2,8 +2,10 @@ package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.business_logic.entities.Payment;
+import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.interfaces.AdminService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
+import com.hounter.backend.business_logic.services.NotifyService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -25,6 +27,9 @@ import java.util.List;
 public class AdminController {
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private NotifyService notifyService;
     @GetMapping("/users")
     public ResponseEntity<?> getUserAccounts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -156,13 +161,11 @@ public class AdminController {
             @Valid @RequestBody Status status
     ){
         try{
-            boolean isUpdated = this.adminService.updatePostStatus(postId, status);
-            if(isUpdated){
-                return ResponseEntity.ok("Post status updated successfully.");
+            Post post = this.adminService.updatePostStatus(postId, status);
+            if (status.equals(Status.delete)) {
+                this.notifyService.createNotifyDeletePostByAdmin(post);
             }
-            else{
-                return ResponseEntity.ok("Post status not updated.");
-            }
+            return ResponseEntity.ok("Post status updated successfully.");
         }
         catch (NotFoundException e){
             return new ResponseEntity<>(e.getMessage(), e.getStatus());

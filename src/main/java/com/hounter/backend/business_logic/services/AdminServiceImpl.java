@@ -151,7 +151,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public boolean updatePostStatus(Long postId, Status status){
+    public Post updatePostStatus(Long postId, Status status){
         Post post = this.postService.findPostById(postId); 
         if(post == null){
             throw new NotFoundException("Post not found.", HttpStatus.OK);
@@ -159,7 +159,7 @@ public class AdminServiceImpl implements AdminService {
         post.setStatus(status);
         post.setUpdateAt(LocalDate.now());
         this.postRepository.save(post);
-        return true;
+        return post;
     }
 
     @Override

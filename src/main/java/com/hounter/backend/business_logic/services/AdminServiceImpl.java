@@ -2,6 +2,7 @@ package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
+import com.hounter.backend.business_logic.entities.Account;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Payment;
 import com.hounter.backend.business_logic.entities.Post;
@@ -9,7 +10,9 @@ import com.hounter.backend.business_logic.entities.Staff;
 import com.hounter.backend.business_logic.interfaces.*;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
+import com.hounter.backend.data_access.repositories.AccountRepository;
 import com.hounter.backend.data_access.repositories.CustomerRepository;
+import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.data_access.repositories.StaffRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -45,6 +48,11 @@ public class AdminServiceImpl implements AdminService {
     private AccountRoleService accountRoleService;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private PostRepository postRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -128,31 +136,30 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public boolean deleteStaff(Long staffId){
-        Optional<Staff> optionalStaff = this.staffRepository.findById(staffId);
-        if(optionalStaff.isEmpty()){
-            throw new NotFoundException("Staff not found.", HttpStatus.OK);
+    public boolean deleteAccount(Long accountId){
+        Optional<Account> optionalAccount = this.accountRepository.findById(accountId);
+        if(optionalAccount.isEmpty()){
+            throw new NotFoundException("Account not found.", HttpStatus.NOT_FOUND);
         }
-        Staff staff = optionalStaff.get();
-        if(!staff.getIsActive()){
+        Account account = optionalAccount.get();
+        if(!account.getIsActive()){
             return false;
         }
-        staff.setIsActive(false);
-        this.staffRepository.save(staff);
+        account.setIsActive(false);
+        this.accountRepository.save(account);
         return true;
     }
 
     @Override
-    public boolean updatePostStatus(Long postId, Status status){
+    public Post updatePostStatus(Long postId, Status status){
         Post post = this.postService.findPostById(postId); 
         if(post == null){
             throw new NotFoundException("Post not found.", HttpStatus.OK);
         }
-        if(post.getStatus().equals(Status.waiting) && status.equals(Status.active)){
-            post.setStatus(status);
-            post.setUpdateAt(LocalDate.now());
-        }
-        return true;
+        post.setStatus(status);
+        post.setUpdateAt(LocalDate.now());
+        this.postRepository.save(post);
+        return post;
     }
 
     @Override

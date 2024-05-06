@@ -6,6 +6,7 @@ import com.hounter.backend.application.DTO.AdminDTO.CustomerListResDTO;
 import com.hounter.backend.application.DTO.AdminDTO.PaymentResAdminDTO;
 import com.hounter.backend.application.DTO.AdminDTO.StaffResDTO;
 import com.hounter.backend.business_logic.entities.Payment;
+import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 
@@ -17,8 +18,8 @@ public interface AdminService {
     boolean createStaff(CreateStaffDTO createStaffDTO);
     List<StaffResDTO> getListStaff(Integer pageNo, Integer pageSize);
     StaffResDTO getStaffInfo(Long staffId);
-    boolean deleteStaff(Long staffId);
-    boolean updatePostStatus(Long postId, Status status);
+    boolean deleteAccount(Long accountId);
+    Post updatePostStatus(Long postId, Status status);
     List<PaymentResAdminDTO> getPaymentsAdmin(String fromDate, String toDate, PaymentStatus status, String transactionId, Long customerId, Long postNum, Integer pageNo, Integer pageSize);
     Payment getPaymentInfo(Long paymentId);
 }

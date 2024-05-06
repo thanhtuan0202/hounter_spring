@@ -120,4 +120,16 @@ public class NotifyService {
         notify.setRedirectId(post.getId());
         notifyRepository.save(notify);
     }
+
+    public void createNotifyDeletePostByAdmin(Post post) {
+        Account account = post.getCustomer();
+        Notify notify = new Notify();
+        notify.setAccount(account);
+        notify.setSubject("Admin");
+        notify.setVerb(NotifyVerb.DELETE);
+        notify.setDirectObject("Bài viết " + post.getId());
+        notify.setRedirectType(NotifyRedirectType.POST);
+        notify.setRedirectId(post.getId());
+        notifyRepository.save(notify);
+    }
 }

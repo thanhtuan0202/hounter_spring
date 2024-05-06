@@ -88,7 +88,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(rollbackFor = {SQLException.class})
     @Override
     public boolean createStaff(CreateStaffDTO createStaffDTO) {
-        String hashPassword = this.passwordEncoder.encode("password");
+        String hashPassword = this.passwordEncoder.encode(createStaffDTO.getPassword());
         Optional<Staff> optionalStaff = this.staffRepository.findByUsername(createStaffDTO.getUsername());
         if(optionalStaff.isPresent()){
             return false;

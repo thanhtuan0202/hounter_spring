@@ -8,7 +8,7 @@ import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.Notify;
 import com.hounter.backend.business_logic.interfaces.CustomerService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
-import com.hounter.backend.business_logic.services.NotificationService;
+import com.hounter.backend.business_logic.services.NotifyService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -31,7 +31,7 @@ public class UserController {
     @Autowired
     private CustomerService userService;
     @Autowired
-    private NotificationService notificationService;
+    private NotifyService notificationService;
     private final CustomUserDetailServiceImpl userDetailsService;
 
     public UserController(CustomUserDetailServiceImpl userDetailsService) {
@@ -138,27 +138,27 @@ public class UserController {
     public ResponseEntity<?> getBalanceHistory(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok("Balance of user");
     }
-    @GetMapping("/{userId}/notifications")
-    public ResponseEntity<?> getNotification(@PathVariable("userId") Long userId,
-                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-                                            @RequestParam(value = "fromDate", required = false) String fromDate,
-                                            @RequestParam(value = "toDate", required = false) String toDate) {
-        try{
-            Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
-            if(!Objects.equals(tokenId, userId)){
-                return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
-            }
-            List<Notify> response = this.notificationService.getNotificationOfUser(userId);
-            return ResponseEntity.ok(response);
-        }
-        catch (DateTimeParseException e){
-            return new ResponseEntity<>("Invalid date format. Date must be in the format YYYY-MM-DD", HttpStatus.BAD_REQUEST);
-        }
-        catch (Exception e) {
-            return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    // @GetMapping("/{userId}/notifications")
+    // public ResponseEntity<?> getNotification(@PathVariable("userId") Long userId,
+    //                                          @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+    //                                         @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+    //                                         @RequestParam(value = "fromDate", required = false) String fromDate,
+    //                                         @RequestParam(value = "toDate", required = false) String toDate) {
+    //     try{
+    //         Long tokenId = this.userDetailsService.getCurrentUserDetails().getUserId();
+    //         if(!Objects.equals(tokenId, userId)){
+    //             return new ResponseEntity<>("Forbidden!", HttpStatus.FORBIDDEN);
+    //         }
+    //         List<Notify> response = this.notificationService.getNotificationOfUser(userId);
+    //         return ResponseEntity.ok(response);
+    //     }
+    //     catch (DateTimeParseException e){
+    //         return new ResponseEntity<>("Invalid date format. Date must be in the format YYYY-MM-DD", HttpStatus.BAD_REQUEST);
+    //     }
+    //     catch (Exception e) {
+    //         return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
+    //     }
+    // }
     @PutMapping("/{userId}")
     public ResponseEntity<?> changeCustomerInfo(@Valid @RequestBody UpdateInfoDTO userInfoDTO, BindingResult binding, @PathVariable("userId") Long userId) {
         if (binding.hasErrors()) {

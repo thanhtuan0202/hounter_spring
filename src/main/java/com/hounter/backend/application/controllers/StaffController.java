@@ -3,9 +3,13 @@ package com.hounter.backend.application.controllers;
 import com.hounter.backend.application.DTO.PostDto.ChangeStatusDto;
 import com.hounter.backend.application.DTO.PostDto.PostResponse;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
+import com.hounter.backend.business_logic.entities.Account;
+import com.hounter.backend.business_logic.entities.Post;
+import com.hounter.backend.business_logic.entities.Staff;
 import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.interfaces.StaffService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
+import com.hounter.backend.data_access.repositories.AccountRepository;
 import com.hounter.backend.shared.enums.Status;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/staffs")
@@ -25,6 +30,9 @@ public class StaffController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     private final CustomUserDetailServiceImpl userDetailsService;
 
@@ -127,6 +135,34 @@ public class StaffController {
             } else {
                 return new ResponseEntity<>("Can't update post status!", HttpStatus.FORBIDDEN);
             }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/request-delete-account/{id}")
+    public ResponseEntity<?> requestDeleteAccount(@PathVariable("id") Long accountId) {
+        try {
+            Optional<Account> accountOptional = this.accountRepository.findById(accountId);
+            if (accountOptional.isEmpty()) {
+                return new ResponseEntity<>("Account not found", HttpStatus.NOT_FOUND);
+            }
+            this.staffService.requestDeleteAccount(accountOptional.get());
+            return ResponseEntity.ok("Request delete account successfully");
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+   
+    @PostMapping("/request-delete-post/{id}")
+    public ResponseEntity<?> requestDeletePost(@PathVariable("id") Long postId) {
+        try {
+            Post post = this.postService.findPostById(postId);
+            if (post == null) {
+                return new ResponseEntity<>("Post not found", HttpStatus.NOT_FOUND);
+            }
+            this.staffService.requestDeletePost(post);
+            return ResponseEntity.ok("Request delete post successfully");
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

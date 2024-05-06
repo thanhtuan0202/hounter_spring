@@ -30,6 +30,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import java.util.ArrayList;
 
 @Service
@@ -87,7 +89,7 @@ public class PostServiceImpl implements PostService {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
-            if(isUser && post.getStatus() == Status.waiting){
+            if (isUser && post.getStatus() == Status.waiting) {
                 return null;
             }
             PostResponse response = PostMapping.PostResponseMapping(post);
@@ -126,7 +128,7 @@ public class PostServiceImpl implements PostService {
         if (!posts.isEmpty()) {
             List<Post> postList = posts.getContent();
             for (Post post : postList) {
-                responses.add(PostMapping.getShortPostResponse(post,this.postCostService.findByPost(post)));
+                responses.add(PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post)));
             }
             return responses;
         } else {
@@ -151,45 +153,48 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post findPostById(Long postId){
+    public Post findPostById(Long postId) {
         Optional<Post> post = this.postRepository.findById(postId);
-        if(post.isPresent()){
+        if (post.isPresent()) {
             return post.get();
         }
         return null;
     }
+
     @Override
-    public List<ShortPostResponse> filterPostForUser(Integer pageSize,Integer pageNo,
-                                                     Customer customer,String category_name,String cost,
-                                                     String startDate,String endDate, Status status){
+    public List<ShortPostResponse> filterPostForUser(Integer pageSize, Integer pageNo,
+            Customer customer, String category_name, String cost,
+            String startDate, String endDate, Status status) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Post> cq = cb.createQuery(Post.class);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Root<Post> post = cq.from(Post.class);
         List<Predicate> predicates = new ArrayList<>();
-        if(customer != null) predicates.add(cb.equal(post.get("customer"), customer));
-        if (!Objects.equals(category_name, "")){
+        if (customer != null)
+            predicates.add(cb.equal(post.get("customer"), customer));
+        if (!Objects.equals(category_name, "")) {
             Category category = this.categoryRepository.findByName(category_name);
             predicates.add(cb.equal(post.get("category"), category));
         }
-        if(!Objects.equals(startDate, "")) {
+        if (!Objects.equals(startDate, "")) {
             predicates.add(cb.greaterThanOrEqualTo(post.get("createAt"), LocalDate.parse(startDate, formatter)));
         }
-        if(!Objects.equals(endDate, "")) {
+        if (!Objects.equals(endDate, "")) {
             predicates.add(cb.lessThanOrEqualTo(post.get("createAt"), LocalDate.parse(endDate, formatter)));
         }
-        if(status != null) predicates.add(cb.equal(post.get("status"), status));
+        if (status != null)
+            predicates.add(cb.equal(post.get("status"), status));
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
         List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
                 .setFirstResult(pageNo * pageSize)
                 .getResultList();
         if (posts != null) {
-            if(!Objects.equals(cost, "")){
+            if (!Objects.equals(cost, "")) {
                 List<ShortPostResponse> responses = new ArrayList<>();
-                for (Post item : posts){
-                    if(this.postCostService.findByPost(item).getCost().getName().equals(cost)){
-                        responses.add(PostMapping.getShortPostResponse(item,this.postCostService.findByPost(item)));
+                for (Post item : posts) {
+                    if (this.postCostService.findByPost(item).getCost().getName().equals(cost)) {
+                        responses.add(PostMapping.getShortPostResponse(item, this.postCostService.findByPost(item)));
                     }
                 }
                 return responses;
@@ -198,14 +203,15 @@ public class PostServiceImpl implements PostService {
         }
         return null;
     }
+
     @Override
     public List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo, Long postId) {
-        return this.feedbackService.getFeedbackByPost(postId,pageSize, pageNo, "createAt", "desc");
+        return this.feedbackService.getFeedbackByPost(postId, pageSize, pageNo, "createAt", "desc");
     }
 
-    public Address getAddress(String street, Integer wardId) throws CategoryNotFoundException{
+    public Address getAddress(String street, Integer wardId) throws CategoryNotFoundException {
         Optional<Ward> opWard = this.wardRepository.findByCode(wardId);
-        if(opWard.isEmpty()){
+        if (opWard.isEmpty()) {
             throw new CategoryNotFoundException("Cannot find ward with name " + wardId);
         }
         return new Address(street, opWard.get());
@@ -261,7 +267,8 @@ public class PostServiceImpl implements PostService {
                 if (category != null) {
                     post.setCategory(category);
                 } else {
-                    throw new CategoryNotFoundException("Cannot find category with name " + updatePostDTO.getCategory());
+                    throw new CategoryNotFoundException(
+                            "Cannot find category with name " + updatePostDTO.getCategory());
                 }
                 PostCost postCost = this.postCostService.findByPost(post);
                 this.postCostService.updatePostCost(postCost, updatePostDTO.getCost(), updatePostDTO.getDays());
@@ -271,7 +278,7 @@ public class PostServiceImpl implements PostService {
                 this.postImageService.deleteImageOfPost(post, updatePostDTO.getDeleteImages());
 
                 Optional<Ward> opWard = this.wardRepository.findByCode(updatePostDTO.getWardId());
-                if(opWard.isEmpty()){
+                if (opWard.isEmpty()) {
                     throw new CategoryNotFoundException("Cannot find ward with name " + updatePostDTO.getWardId());
                 }
                 Address address = post.getAddress();
@@ -279,7 +286,7 @@ public class PostServiceImpl implements PostService {
                 address.setWard(opWard.get());
                 address.setDistrict(opWard.get().getDistrict());
                 address.setProvince(opWard.get().getDistrict().getProvince());
-                
+
                 FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(address.toString());
                 post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
                 post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
@@ -312,7 +319,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public FeedbackResponse createNewFeedback(CreateFeedback createFeedback, Long postId, Long userId) {
-        return this.feedbackService.createFeedback(createFeedback,postId,userId);
+        return this.feedbackService.createFeedback(createFeedback, postId, userId);
     }
 
     @Override
@@ -328,15 +335,11 @@ public class PostServiceImpl implements PostService {
         Root<Post> post = cq.from(Post.class);
         List<Predicate> predicates = new ArrayList<>();
 
-        if (filter.getCity() != null) {
-            predicates.add(cb.equal(post.get("city"), filter.getCity()));
-        }
-
-        if (filter.getCounty() != null) {
-            predicates.add(cb.equal(post.get("county"), filter.getCounty()));
-        }
-        if (filter.getDistrict() != null) {
-            predicates.add(cb.equal(post.get("district"), filter.getDistrict()));
+        if (filter.getWardId() != null) {
+            Optional<Ward> ward = this.wardRepository.findByCode(filter.getWardId());
+            if (!ward.isEmpty()) {
+                predicates.add(cb.equal(post.get("address").get("ward"), ward.get()));
+            }
         }
         if (filter.getUpperPrice() != null) {
             predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getUpperPrice()));
@@ -349,6 +352,8 @@ public class PostServiceImpl implements PostService {
         }
         if (filter.getStatus() != null) {
             predicates.add(cb.equal(post.get("status"), filter.getStatus()));
+        } else {
+            predicates.add(cb.equal(post.get("status"), Status.active));
         }
         cq.where(predicates.toArray(new Predicate[0]));
         cq.orderBy(cb.desc(post.get("createAt")));
@@ -360,21 +365,26 @@ public class PostServiceImpl implements PostService {
         }
         return null;
     }
+
     @Override
-    public List<ShortPostResponse> searchOnMap(float latitude, float longitude, Integer pageSize, Integer pageNo){
+    public List<ShortPostResponse> searchOnMap(float latitude, float longitude, Integer pageSize, Integer pageNo) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "create_at"));
-        List<Post> postResult = this.postRepository.findPostNearYou(latitude,longitude,pageable);
+        List<Post> postResult = this.postRepository.findPostNearYou(latitude, longitude, pageable);
         log.info("Enter search on map and return " + postResult.size() + " row");
         List<ShortPostResponse> responses = new ArrayList<ShortPostResponse>();
-        for(Post post : postResult){
-            responses.add(PostMapping.getShortPostResponse(post,this.postCostService.findByPost(post)));
+        for (Post post : postResult) {
+            responses.add(PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post)));
         }
         return responses;
     }
 
     @Override
-    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q){
-        return null;
+    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q)
+            throws Exception {
+
+        return this.postRepository.search(q, em).stream().filter(post -> post.getStatus() == Status.active)
+                .map(post -> PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post))).toList();
+
     }
 
     @Override
@@ -408,23 +418,22 @@ public class PostServiceImpl implements PostService {
         }
         return false;
     }
+
     @Override
     @Transactional(rollbackFor = { Exception.class })
-    public boolean changeStatus_Staff(Long postId, String status, Long staffId){
+    public boolean changeStatus_Staff(Long postId, String status, Long staffId) {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
             if (post.getStatus().equals(Status.waiting)) {
                 PostCost postCost = this.postCostService.findByPost(post);
-                if(status.equals(Status.active.toString())) {
+                if (status.equals(Status.active.toString())) {
                     post.setStatus(Status.active);
                     post.setUpdateAt(LocalDate.now());
                     post.setExpireAt(LocalDate.now().plusDays(postCost.getActiveDays()));
-                }
-                else if(status.equals(Status.delete.toString())){
+                } else if (status.equals(Status.delete.toString())) {
                     post.setStatus(Status.delete);
-                }
-                else{
+                } else {
                     return false;
                 }
                 this.postRepository.save(post);
@@ -440,7 +449,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostOfUserRes getPostDetailOfUser(Long postId) {
         Optional<Post> postOptional = this.postRepository.findById(postId);
-        if(postOptional.isPresent()){
+        if (postOptional.isPresent()) {
             Post post = postOptional.get();
             PostOfUserRes response = PostMapping.PostOfUserMapping(post);
             response.setCost(new PostCostRes(this.postCostService.findByPost(post).getCost().getName(),
@@ -478,20 +487,22 @@ public class PostServiceImpl implements PostService {
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                        * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return (float) (R * c);
     }
 
     @Override
-    public List <SummaryPostDTO> findAvancedPost(FindPostDTO findPostDTO){
+    public List<SummaryPostDTO> findAvancedPost(FindPostDTO findPostDTO) {
         try {
-            List <FindPointsAddress.LatLng> points = findPostDTO.getPoints();
+            List<FindPointsAddress.LatLng> points = findPostDTO.getPoints();
             Integer area = findPostDTO.getArea() == null ? 5 : findPostDTO.getArea();
-            List <Post> posts = this.postRepository.findByStatus(Status.active);
-            List <Post> res = new ArrayList<>();
+            List<Post> posts = this.postRepository.findByStatus(Status.active);
+            List<Post> res = new ArrayList<>();
             for (Post post : posts) {
-                FindPointsAddress.LatLng postLatLng = new FindPointsAddress.LatLng(post.getLatitude().floatValue(), post.getLongitude().floatValue());
+                FindPointsAddress.LatLng postLatLng = new FindPointsAddress.LatLng(post.getLatitude().floatValue(),
+                        post.getLongitude().floatValue());
                 for (FindPointsAddress.LatLng latLng : points) {
                     if (LngLatToDistance(latLng, postLatLng) < area) {
                         res.add(post);
@@ -499,13 +510,12 @@ public class PostServiceImpl implements PostService {
                     }
                 }
             }
-            List <SummaryPostDTO> responses = new ArrayList<>();
+            List<SummaryPostDTO> responses = new ArrayList<>();
             for (Post post : res) {
                 responses.add(new SummaryPostDTO(post));
             }
             return responses;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.error("Cannot find address");
             return null;
         }

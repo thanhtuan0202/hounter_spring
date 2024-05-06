@@ -11,9 +11,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+
+
+
 
 @Entity
 @Table(name = "posts")
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,8 +31,10 @@ public class Post {
     private Long id;
 
     @Column(name = "title", nullable = false)
+    @FullTextField
     private String title;
 
+    @FullTextField
     @Column(name = "description", nullable = false,length = 10000)
     private String description;
 

@@ -29,7 +29,7 @@ public class NotificationService {
     public List<Notify> getNotificationOfUser(Long userId){
         CompletableFuture<List<Notify>> future = new CompletableFuture<>();
         DatabaseReference firebaseReference = firebaseDatabase.getReference(NOTIFICATION_PATH);
-         firebaseReference.addValueEventListener(new ValueEventListener() {
+         firebaseReference.orderByChild("creatAt").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<Notify> notifies = new ArrayList<>();

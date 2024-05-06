@@ -11,11 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilterPostDto {
-    private String city;
-    private String county;
-    private String district;
-    private Integer upperPrice;
-    private Integer lowerPrice;
-    private Long category;
-    private Status status;
+    public Integer wardId;
+    public Integer upperPrice;
+    public Integer lowerPrice;
+    public Long category;
+    public Status status;
 }

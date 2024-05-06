@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/posts")
 @Log4j2
@@ -35,7 +34,9 @@ public class PostController {
     private final CustomUserDetailServiceImpl userDetailsService;
     // private final FindPointsAddress findPointsAddress;
     private final FindPointMapbox findPointMapbox;
-    public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress, FindPointMapbox findPointMapbox) {
+
+    public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress,
+            FindPointMapbox findPointMapbox) {
         this.userDetailsService = userDetailsService;
         // this.findPointsAddress = findPointsAddress;
         this.findPointMapbox = findPointMapbox;
@@ -45,7 +46,7 @@ public class PostController {
     public ResponseEntity<?> getAllPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "type", defaultValue = "1") Long type ) {
+            @RequestParam(value = "type", defaultValue = "1") Long type) {
         try {
             List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "createAt", "desc",
                     Status.active);
@@ -58,12 +59,11 @@ public class PostController {
         }
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostDetail(@PathVariable("id") Long id) {
         try {
             PostResponse post = this.postService.getPostById(id, true);
-            if(post == null) {
+            if (post == null) {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(post);
@@ -78,12 +78,13 @@ public class PostController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @PathVariable("id") Long id) {
         try {
-            List<FeedbackResponse> response = this.postService.getPostFeedback(pageSize, pageNo - 1,id);
+            List<FeedbackResponse> response = this.postService.getPostFeedback(pageSize, pageNo - 1, id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @GetMapping("/filter")
     public ResponseEntity<?> getFilterPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -94,15 +95,15 @@ public class PostController {
             log.error("Error mapping request " + binding);
             return ResponseEntity.badRequest().body(error_lst);
         }
-        try{
-            List<ShortPostResponse> responses = this.postService.filterPost(pageSize, pageNo - 1, "createAt", "desc", filterDto);
+        try {
+            List<ShortPostResponse> responses = this.postService.filterPost(pageSize, pageNo - 1, "createAt", "desc",
+                    filterDto);
             if (responses == null) {
                 return ResponseEntity.noContent().build();
             }
             log.info("Filter post response returned " + responses.size());
             return ResponseEntity.ok(responses);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -115,7 +116,12 @@ public class PostController {
             @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @RequestParam(value = "q") String searchValue) {
-        return ResponseEntity.ok("go to search controller" + searchValue);
+        try {
+            return ResponseEntity.ok(this.postService.searchPost(pageSize, pageNo, sortBy, sortDir, searchValue));
+        } catch (Exception e) {
+            log.error("Error: " + e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/search-on-map")
@@ -123,16 +129,15 @@ public class PostController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "latitude") float latitude,
-            @RequestParam(value = "longitude") float longitude
-    ){
+            @RequestParam(value = "longitude") float longitude) {
         try {
             List<ShortPostResponse> responses = this.postService.searchOnMap(latitude, longitude, pageSize, pageNo - 1);
             return ResponseEntity.ok(responses);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPost, BindingResult binding) {
         if (binding.hasErrors()) {
@@ -149,23 +154,23 @@ public class PostController {
     }
 
     @PostMapping("/{id}/feedback")
-    public ResponseEntity<?> createNewFeedback(@Valid @PathVariable("id") Long postId, @Valid @RequestBody CreateFeedback createFeedback, BindingResult binding){
-        if(binding.hasErrors()){
+    public ResponseEntity<?> createNewFeedback(@Valid @PathVariable("id") Long postId,
+            @Valid @RequestBody CreateFeedback createFeedback, BindingResult binding) {
+        if (binding.hasErrors()) {
             List<BindingBadRequest> errors = MappingError.mappingError(binding);
             return ResponseEntity.badRequest().body(errors);
         }
-        try{
+        try {
             Long customerId = this.userDetailsService.getCurrentUserDetails().getUserId();
-            FeedbackResponse response = this.postService.createNewFeedback(createFeedback,postId,customerId);
+            FeedbackResponse response = this.postService.createNewFeedback(createFeedback, postId, customerId);
             return ResponseEntity.ok(response);
-        }
-        catch (PostNotFoundException e){
+        } catch (PostNotFoundException e) {
             return new ResponseEntity<>(new ApiResponse<>(e.getMessage()), HttpStatus.OK);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(@Valid @RequestBody UpdatePostDTO updatePost,
             @Valid @PathVariable("id") Long postId,
@@ -183,6 +188,7 @@ public class PostController {
         }
 
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<?> changePostStatus(@Valid @PathVariable("id") Long postId,
             @Valid @RequestBody ChangeStatusDto changeStatus, BindingResult binding) {
@@ -204,27 +210,25 @@ public class PostController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePost(@Valid @PathVariable("id") Long postId) {
-        try{
+        try {
             Long userId = this.userDetailsService.getCurrentUserDetails().getUserId();
             PostResponse postResponse = this.postService.deletePost(postId, userId);
             return ResponseEntity.ok(postResponse);
-        }
-        catch (PostNotFoundException e){
+        } catch (PostNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
-        }
-        catch (ForbiddenException e){
+        } catch (ForbiddenException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/find_address")
     public ResponseEntity<?> findAddress(@RequestBody String address) throws IOException {
-//        return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
+        // return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
         return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
     }
 

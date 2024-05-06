@@ -48,7 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PostCostRepository postCostRepository;
     @Autowired
-    private NotificationService notificationService;
+    private NotifyService notifyService;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @PersistenceContext
@@ -105,10 +105,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentMethod(bankCode);
         post.setStatus(Status.active);
         post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
-        Notify notify = new Notify(NotificationService.TITLE_COMPLETE, "", String.format(NotificationService.CONTENT_COMPLETE, payment.getPaymentId()),
-                LocalDate.now().toString(), false, post.getCustomer().getId().intValue());
-        this.notificationService.createNotification(notify);
         this.paymentRepository.save(payment);
+        this.notifyService.createNotifyPaySuccess(payment);
     }
 
     @Override
@@ -304,10 +302,7 @@ public class PaymentServiceImpl implements PaymentService {
             post.setStatus(Status.delete);
             post.setUpdateAt(LocalDate.now());
             this.postRepository.save(post);
-            Notify notify = new Notify(NotificationService.TITLE_EXPIRED, "",
-                    String.format(NotificationService.CONTENT_EXPIRED, payment.getPostNum()),
-                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
-            this.notificationService.createNotification(notify);
+            Notify notify = this.notifyService.createNotifyPayExpired(payment);
             this.messagingTemplate.convertAndSendToUser(payment.getCustomer().getUsername(), "/user/notify", notify);
         }
         log.info("Checking payment expiration... done with " + payments.size() + " payments.");
@@ -315,13 +310,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void handleRemindPayment(LocalDate date) {
-        List<Payment> payments = this.paymentRepository.findByExpireAtAndStatus(date.minusDays(1), PaymentStatus.PENDING);
-        for (Payment payment : payments) {
-            Notify notify = new Notify(NotificationService.TITLE_PENDING, "",
-                    String.format(NotificationService.CONTENT_PENDING, payment.getTotalPrice(),payment.getExpireAt()),
-                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
-            this.notificationService.createNotification(notify);
-        }
-        log.info("Checking payment expiration... done with " + payments.size() + " payments.");
+        // List<Payment> payments = this.paymentRepository.findByExpireAtAndStatus(date.minusDays(1), PaymentStatus.PENDING);
+        // for (Payment payment : payments) {
+        //     Notify notify = new Notify(NotificationService.TITLE_PENDING, "",
+        //             String.format(NotificationService.CONTENT_PENDING, payment.getTotalPrice(),payment.getExpireAt()),
+        //             LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
+        //     this.notificationService.createNotification(notify);
+        // }
+        // log.info("Checking payment expiration... done with " + payments.size() + " payments.");
     }
 }

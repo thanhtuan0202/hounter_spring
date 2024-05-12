@@ -132,7 +132,7 @@ public class PaymentServiceImpl implements PaymentService {
         long vnp_amount = payment.getTotalPrice() * 100;
         String bankCode = "NCB";
 
-        String vnp_TxnRef = post.getId().toString();
+        String vnp_TxnRef = String.valueOf(VnpayConfig.getRandomNumber(8));
         String vnp_IpAddr = serverAddress;
 
         String vnp_TmnCode = VnpayConfig.vnp_TmnCode;

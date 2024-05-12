@@ -1,13 +1,5 @@
 package com.hounter.backend.business_logic.services;
 
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-
 import com.hounter.backend.application.DTO.CustomUserDetail;
 import com.hounter.backend.application.DTO.NotifyDTO;
 import com.hounter.backend.business_logic.entities.Account;
@@ -19,9 +11,16 @@ import com.hounter.backend.data_access.repositories.NotifyRepository;
 import com.hounter.backend.shared.enums.NotifyPrepositional;
 import com.hounter.backend.shared.enums.NotifyRedirectType;
 import com.hounter.backend.shared.enums.NotifyVerb;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,7 +36,7 @@ public class NotifyService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long accountId = ((Account) principal).getId();
         Optional <Account> account = accountRepository.findById(accountId);
-        if (!account.isPresent()) {
+        if (account.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
         NotifyDTO notifyDTO = new NotifyDTO(notifyRepository.findById(notifyId).get());
@@ -46,16 +45,16 @@ public class NotifyService {
         return notifyDTO;
     }
 
-    public List<NotifyDTO> getNotifies() {
+    public List<NotifyDTO> getNotifies(Integer pageNo, Integer pageSize) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long accountId = ((CustomUserDetail) principal).getUserId();
         Optional <Account> account = accountRepository.findById(accountId);
-        if (!account.isPresent()) {
+        if (account.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
-        return notifyRepository.findByAccount_Id(accountId).stream()
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "createdAt"));
+        return notifyRepository.findByAccount(account.get(), pageable).stream()
             .map(NotifyDTO::new)
-            .sorted(Comparator.comparing(NotifyDTO::getCreateAt).reversed())
             .collect(Collectors.toList());
     }
 

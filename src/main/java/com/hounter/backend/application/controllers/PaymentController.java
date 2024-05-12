@@ -25,7 +25,7 @@ public class PaymentController {
             @RequestParam("vnp_ResponseCode") String vnp_ResponseCode,
             @RequestParam("vnp_BankCode") String vnp_BankCode,
             @RequestParam("vnp_TransactionNo") String vnp_TransactionNo,
-            @RequestParam("vnp_BankTranNo") String vnp_BankTranNo,
+            @RequestParam(value = "vnp_BankTranNo", required = false) String vnp_BankTranNo,
             @RequestParam("vnp_Amount") Integer vnp_Amount,
             @RequestParam("vnp_TxnRef") Long vnp_TxnRef
     ){

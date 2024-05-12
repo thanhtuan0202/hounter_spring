@@ -10,8 +10,8 @@ import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
-import com.hounter.backend.shared.utils.FindPointMapbox;
 import com.hounter.backend.shared.utils.FindPointsAddress;
+import com.hounter.backend.shared.utils.GoongUtils;
 import com.hounter.backend.shared.utils.MappingError;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -32,14 +32,11 @@ public class PostController {
     private PostService postService;
 
     private final CustomUserDetailServiceImpl userDetailsService;
-    // private final FindPointsAddress findPointsAddress;
-    private final FindPointMapbox findPointMapbox;
+    private GoongUtils goongUtils;
 
-    public PostController(CustomUserDetailServiceImpl userDetailsService, FindPointsAddress findPointsAddress,
-            FindPointMapbox findPointMapbox) {
+    public PostController(CustomUserDetailServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
-        // this.findPointsAddress = findPointsAddress;
-        this.findPointMapbox = findPointMapbox;
+        this.goongUtils = new GoongUtils();
     }
 
     @GetMapping()
@@ -228,8 +225,7 @@ public class PostController {
 
     @PostMapping("/find_address")
     public ResponseEntity<?> findAddress(@RequestBody String address) throws IOException {
-        // return ResponseEntity.ok(findPointsAddress.getAddressPoints(address));
-        return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
+        return ResponseEntity.ok(goongUtils.getAddressLngLat(address));
     }
 
     @PostMapping("/find_post")

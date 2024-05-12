@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hounter.backend.application.DTO.PlaceDTO;
 import com.hounter.backend.business_logic.interfaces.PlaceService;
 import com.hounter.backend.shared.enums.PlaceType;
-import com.hounter.backend.shared.utils.FindPointMapbox;
+import com.hounter.backend.shared.utils.GoongUtils;
 
 @RestController
 @RequestMapping("/place")
@@ -23,12 +23,8 @@ public class PlaceController {
     @Autowired
     private PlaceService placeService;
 
-    private final FindPointMapbox findPointMapbox;
-
-    public PlaceController(FindPointMapbox findPointMapbox) {
-        // this.findPointsAddress = findPointsAddress;
-        this.findPointMapbox = findPointMapbox;
-    }
+    @Autowired
+    private GoongUtils goongUtils;
 
     @GetMapping()
     public ResponseEntity<?> getPlaces(
@@ -61,7 +57,7 @@ public class PlaceController {
             @RequestParam(value = "address") String address
     ){
         try{
-            return ResponseEntity.ok(findPointMapbox.getAddressPoints(address));
+            return ResponseEntity.ok(goongUtils.getAddressLngLat(address));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

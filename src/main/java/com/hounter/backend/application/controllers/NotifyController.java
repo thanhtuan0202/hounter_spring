@@ -27,6 +27,6 @@ public class NotifyController {
     @GetMapping()
     public ResponseEntity<?> ReadAllNotify(@RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
-        return ResponseEntity.ok(notifyService.getNotifies());
+        return ResponseEntity.ok(notifyService.getNotifies(pageNo - 1, pageSize));
     }
 }

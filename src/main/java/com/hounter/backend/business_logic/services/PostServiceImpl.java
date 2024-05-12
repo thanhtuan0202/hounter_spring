@@ -21,8 +21,9 @@ import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 
-import com.hounter.backend.shared.utils.FindPointMapbox;
 import com.hounter.backend.shared.utils.FindPointsAddress;
+import com.hounter.backend.shared.utils.GoongUtils;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -80,7 +81,8 @@ public class PostServiceImpl implements PostService {
     private FeedbackService feedbackService;
 
     @Autowired
-    private FindPointMapbox findPointMapbox;
+    private GoongUtils goongUtils;
+
     @PersistenceContext
     protected EntityManager em;
 
@@ -236,7 +238,7 @@ public class PostServiceImpl implements PostService {
 
         Address address = getAddress(createPostDTO.getStreet(), createPostDTO.getWardId());
         this.addressRepository.save(address);
-        FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(address.toString());
+        GoongUtils.Location latLng = this.goongUtils.getAddressLngLat(address.toString());
         post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
         post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
         post.setAddress(address);
@@ -287,7 +289,7 @@ public class PostServiceImpl implements PostService {
                 address.setDistrict(opWard.get().getDistrict());
                 address.setProvince(opWard.get().getDistrict().getProvince());
 
-                FindPointsAddress.LatLng latLng = this.findPointMapbox.getAddressPoints(address.toString());
+                GoongUtils.Location latLng = this.goongUtils.getAddressLngLat(address.toString());
                 post.setLatitude(BigDecimal.valueOf(latLng.getLat()));
                 post.setLongitude(BigDecimal.valueOf(latLng.getLng()));
                 this.addressRepository.save(address);

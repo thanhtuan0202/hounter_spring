@@ -26,7 +26,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatusAndCategory(Status status, Category category, Pageable page);
     List<Post> findByCustomer(Customer customer, Pageable page);
     List<Post> findByCustomerAndStatus(Customer customer, Status status, Pageable page);
-    @Query(value = "SELECT * FROM posts p WHERE distance_haversine(p.latitude, p.longitude, :latitude, :longitude) < 3", nativeQuery = true)
+    @Query(value = "SELECT * FROM posts p WHERE distance_haversine(p.latitude, p.longitude, :latitude, :longitude) < 3 and status=1", nativeQuery = true)
     List<Post> findPostNearYou(@Param("latitude") float latitude, @Param("longitude") float longitude, Pageable pageable);
 
 

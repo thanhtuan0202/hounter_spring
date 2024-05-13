@@ -10,7 +10,7 @@ public class PaymentMapping {
         response.setCreateAt(payment.getCreateAt());
         response.setStatus(payment.getStatus());
         response.setPaymentAt(payment.getPaymentDate());
-        response.setTransactionId(payment.getPaymentId());
+        response.setTransactionId(payment.getVnPayTransactionId());
         response.setPaymentMethod(payment.getPaymentMethod());
         response.setPostId(payment.getPostCost().getPost().getId());
         response.setPostTitle(payment.getPostCost().getPost().getTitle());

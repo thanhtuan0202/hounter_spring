@@ -10,11 +10,12 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    Payment findByPostCost(PostCost post);
+    Optional<Payment> findByPostCost(PostCost post);
     List<Payment> findByCustomer(Customer customer, Pageable pageable);
-    Payment findByPostNum(Long postNum);
     List<Payment> findByExpireAtAndStatus(LocalDate expireAt, PaymentStatus status);
+    Optional<Payment> findByVnPayTxnRef(String vnPayTxnRef);
 }

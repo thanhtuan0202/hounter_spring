@@ -78,7 +78,7 @@ public class NotifyService {
         notify.setSubject("Payment " + payment.getId());
         notify.setVerb(NotifyVerb.EXPIRED);
         notify.setPrepositionalObject(NotifyPrepositional.FOR);
-        notify.setIndirectObject("Post " + payment.getPostNum());
+        notify.setIndirectObject("Post " + payment.getPostCost().getPost().getId());
         notify.setRedirectType(NotifyRedirectType.PAYMENT);
         notify.setRedirectId(payment.getId());
         return notify;
@@ -86,7 +86,7 @@ public class NotifyService {
 
     public void createNotifyDeleteAccount(Account account) {
         Optional <Account> adminAccount = accountRepository.findByUsername("admin");
-        if (!adminAccount.isPresent()) {
+        if (adminAccount.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

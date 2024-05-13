@@ -6,13 +6,12 @@ import jakarta.validation.constraints.Digits;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
-
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 
 
@@ -56,12 +55,12 @@ public class Post {
     @Column(name = "status", nullable = false)
     private Status status = Status.waiting;
 
-    @Column(name = "latitude", precision = 10, scale = 8)
-    @Digits(integer=2, fraction=8)
+    @Column(name = "latitude", precision = 17, scale = 15)
+    @Digits(integer=2, fraction=15)
     private BigDecimal latitude;
 
-    @Column(name = "longitude", precision = 11, scale = 8)
-    @Digits(integer=3, fraction=8)
+    @Column(name = "longitude", precision = 18, scale = 15)
+    @Digits(integer=3, fraction=15)
     private BigDecimal longitude;
 
     @Column(name = "create_at")

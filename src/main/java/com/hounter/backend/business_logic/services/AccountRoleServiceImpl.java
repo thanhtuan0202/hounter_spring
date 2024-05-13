@@ -33,18 +33,7 @@ public class AccountRoleServiceImpl implements AccountRoleService {
             Set<Role> roles = new HashSet<>();
             roles.add(role);
             account.setRoles(roles);
-            Set<Account> accounts = new HashSet<>();
-            if(role.getAccounts() == null || role.getAccounts().isEmpty()){
-                accounts.add(account);
-                role.setAccounts(accounts);
-            }
-            else{
-                role.getAccounts().add(account);
-            }
-
             this.accountRepository.save(account);
-            this.roleRepository.save(role);
-
         }
         else{
             throw new RuntimeException();

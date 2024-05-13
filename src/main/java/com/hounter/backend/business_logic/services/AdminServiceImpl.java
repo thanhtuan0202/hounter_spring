@@ -2,18 +2,11 @@ package com.hounter.backend.business_logic.services;
 
 import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
-import com.hounter.backend.business_logic.entities.Account;
-import com.hounter.backend.business_logic.entities.Customer;
-import com.hounter.backend.business_logic.entities.Payment;
-import com.hounter.backend.business_logic.entities.Post;
-import com.hounter.backend.business_logic.entities.Staff;
+import com.hounter.backend.business_logic.entities.*;
 import com.hounter.backend.business_logic.interfaces.*;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
-import com.hounter.backend.data_access.repositories.AccountRepository;
-import com.hounter.backend.data_access.repositories.CustomerRepository;
-import com.hounter.backend.data_access.repositories.PostRepository;
-import com.hounter.backend.data_access.repositories.StaffRepository;
+import com.hounter.backend.data_access.repositories.*;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
@@ -42,8 +35,6 @@ public class AdminServiceImpl implements AdminService {
     private StaffRepository staffRepository;
     @Autowired
     private PostService postService;
-    @Autowired
-    private PostCostService postCostService;
     @Autowired
     private AccountRoleService accountRoleService;
     @Autowired
@@ -177,11 +168,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Payment getPaymentInfo(Long postNum) {
-        Payment payment = this.paymentService.getPaymentByPostNum(postNum);
-        if(payment == null){
-            throw new NotFoundException("Payment not found.", HttpStatus.OK);
+    public Payment getPaymentInfo(Long postId) {
+        Post post = this.postService.findPostById(postId);
+        if(post == null){
+            throw new NotFoundException("Post not found.", HttpStatus.NOT_FOUND);
         }
-        return payment;
+        return this.paymentService.getPaymentByPost(post);
     }
 }

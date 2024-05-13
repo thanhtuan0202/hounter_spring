@@ -245,7 +245,6 @@ public class PostServiceImpl implements PostService {
         Post saved_post = this.postRepository.save(post);
         PostCost postCost = this.postCostService.enrollPostToCost(saved_post, createPostDTO.getCost(),
                 createPostDTO.getDays());
-
         this.paymentService.savePaymentOfPost(postCost, userId);
         this.postImageService.storeImageOfPost(saved_post, createPostDTO.getImageUrls());
         return PostMapping.PostResponseMapping1(saved_post);
@@ -274,11 +273,9 @@ public class PostServiceImpl implements PostService {
                 }
                 PostCost postCost = this.postCostService.findByPost(post);
                 this.postCostService.updatePostCost(postCost, updatePostDTO.getCost(), updatePostDTO.getDays());
-                Payment payment = this.paymentService.getPaymentByPostNum(postId);
-                this.paymentService.savePaymentOfPost(payment, postCost);
+                this.paymentService.updatePaymentOfPost(postCost);
                 this.postImageService.storeImageOfPost(post, updatePostDTO.getAddImages());
                 this.postImageService.deleteImageOfPost(post, updatePostDTO.getDeleteImages());
-
                 Optional<Ward> opWard = this.wardRepository.findByCode(updatePostDTO.getWardId());
                 if (opWard.isEmpty()) {
                     throw new CategoryNotFoundException("Cannot find ward with name " + updatePostDTO.getWardId());

@@ -13,6 +13,7 @@ import com.hounter.backend.data_access.repositories.PostCostRepository;
 import com.hounter.backend.data_access.repositories.PostRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
+import com.hounter.backend.shared.exceptions.NotFoundException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -22,9 +23,12 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -34,6 +38,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -48,7 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PostCostRepository postCostRepository;
     @Autowired
-    private NotificationService notificationService;
+    private NotifyService notifyService;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @PersistenceContext
@@ -76,13 +81,15 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(PaymentStatus.PENDING);
         payment.setCustomer(postCost.getPost().getCustomer());
         payment.setPaymentInfo("Thanh toan cho bai dang: " + postCost.getPost().getId());
-        payment.setPostNum(postCost.getPost().getId());
+        payment.setNumOfAttempts(0);
         this.paymentRepository.save(payment); 
     }
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public void savePaymentOfPost(Payment payment, PostCost postCost) {
+    public void updatePaymentOfPost(PostCost postCost) {
+        Payment payment = this.paymentRepository.findByPostCost(postCost)
+                .orElseThrow( () -> new NotFoundException("Payment not found.", HttpStatus.NOT_FOUND));
         payment.setCreateAt(LocalDate.now());
         payment.setExpireAt(LocalDate.now().plusDays(7));
         payment.setTotalPrice(postCost.getCost().getPrice() * postCost.getActiveDays());
@@ -91,28 +98,33 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void confirmSuccessPayment(Long postId,String transactionNo, String bankCode, Integer amount) {
-        Optional<Post> optionalPost = this.postRepository.findById(postId);
-        if(optionalPost.isEmpty()){
-            throw new PostNotFoundException("Post not found.");
+    public UriComponents confirmPayment(String vnpResponseCode, String vnPayTxnRef, String transactionNo, String bankCode, Integer vnpAmount, String vnpPayDate) {
+        Payment payment = this.paymentRepository.findByVnPayTxnRef(vnPayTxnRef)
+                .orElseThrow( () -> new NotFoundException("Payment not found.", HttpStatus.NOT_FOUND));
+        if(!vnpResponseCode.equals("00")){
+            return UriComponentsBuilder.newInstance()
+                    .query("post_id={keyword}&vnp_TxnRef={keyword}&vnp_Amount={keyword}")
+                    .buildAndExpand(payment.getPostCost().getPost().getId(), vnPayTxnRef, vnpAmount);
         }
-        Post post = optionalPost.get();
-        Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post));
-        payment.setPaymentDate(LocalDate.now());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        LocalDateTime payDate = LocalDateTime.parse(vnpPayDate, formatter);
+        payment.setPaymentDate(payDate);
         payment.setStatus(PaymentStatus.COMPLETE);
-        payment.setPaymentId(transactionNo);
-        payment.setTotalPrice(amount / 100);
+        payment.setVnPayTransactionId(transactionNo);
+        payment.setTotalPrice(vnpAmount / 100);
         payment.setPaymentMethod(bankCode);
+        Post post = payment.getPostCost().getPost();
         post.setStatus(Status.active);
         post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
-        Notify notify = new Notify(NotificationService.TITLE_COMPLETE, "", String.format(NotificationService.CONTENT_COMPLETE, payment.getPaymentId()),
-                LocalDate.now().toString(), false, post.getCustomer().getId().intValue());
-        this.notificationService.createNotification(notify);
         this.paymentRepository.save(payment);
+        this.notifyService.createNotifyPaySuccess(payment);
+        return UriComponentsBuilder.newInstance()
+                .query("post_id={keyword}&vnp_TxnRef={keyword}&vnp_Amount={keyword}&vnp_TransactionNo={keyword}&vnp_PayDate={keyword}")
+                .buildAndExpand(payment.getPostCost().getPost().getId(), vnPayTxnRef, vnpAmount, transactionNo, payDate);
     }
 
     @Override
-    public CreatePaymentDTO createPaymentOfPost(String xForwardedFor, String remoteAddr, Long postId, Long amount, Long userId) throws IOException {
+    public CreatePaymentDTO createPaymentOfPost( Long postId, Long amount, Long userId) throws IOException {
         Optional<Post> optionalPost = this.postRepository.findById(postId);
         if(optionalPost.isEmpty()){
             throw new PostNotFoundException("Post not found.");
@@ -121,7 +133,8 @@ public class PaymentServiceImpl implements PaymentService {
         if(!Objects.equals(post.getCustomer().getId(), userId)){
             throw new PostNotFoundException("Post not found.");
         }
-        Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post));
+        Payment payment = this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post))
+                .orElseThrow( () -> new NotFoundException("Payment not found.", HttpStatus.NOT_FOUND));
         if(payment.getStatus() == PaymentStatus.COMPLETE){
             return new CreatePaymentDTO("", "Payment has been completed", "Payment has been completed");
         }
@@ -133,51 +146,45 @@ public class PaymentServiceImpl implements PaymentService {
         String orderType = "other";
         long vnp_amount = payment.getTotalPrice() * 100;
         String bankCode = "NCB";
-
-        String vnp_TxnRef = post.getId().toString();
-        String vnp_IpAddr = serverAddress;
-
+        String vnp_TxnRef = VnpayConfig.getRandomNumber(8);
+        payment.setVnPayTxnRef(vnp_TxnRef);
+        payment.setNumOfAttempts(payment.getNumOfAttempts() + 1);
+        this.paymentRepository.save(payment);
         String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
-
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.put("vnp_Amount", String.valueOf(vnp_amount));
         vnp_Params.put("vnp_CurrCode", "VND");
-
         vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", payment.getPaymentInfo());
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
-
         vnp_Params.put("vnp_ReturnUrl", VnpayConfig.vnp_ReturnUrl);
-        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        vnp_Params.put("vnp_IpAddr", serverAddress);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
-
         cld.add(Calendar.MINUTE, 15);
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-        List fieldNames = new ArrayList(vnp_Params.keySet());
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
+        Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
-            String fieldName = (String) itr.next();
-            String fieldValue = (String) vnp_Params.get(fieldName);
+            String fieldName = itr.next();
+            String fieldValue = vnp_Params.get(fieldName);
             if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
                 hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                //Build query
                 query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
                 query.append('=');
                 query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
@@ -195,7 +202,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public VNPayResDTO getPaymentInfo(String orderId, String vnp_TransDate, String xForwardedFor, String remoteAddr) throws IOException {
+    public VNPayResDTO getPaymentInfo(String orderId, String vnp_TransDate) throws IOException {
         String vnp_RequestId = VnpayConfig.getRandomNumber(8);
         String vnp_Version = "2.1.0";
         String vnp_Command = "querydr";
@@ -218,7 +225,6 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.addProperty("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.addProperty("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
-//        vnp_Params.addProperty("vnp_TransactionNo", "14307221");
         vnp_Params.addProperty("vnp_TransactionDate", vnp_TransDate);
         vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
         vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
@@ -248,8 +254,7 @@ public class PaymentServiceImpl implements PaymentService {
         in.close();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        VNPayResDTO results = objectMapper.readValue(response.toString(), VNPayResDTO.class);
-        return results;
+        return objectMapper.readValue(response.toString(), VNPayResDTO.class);
     }
 
     @Override
@@ -285,10 +290,6 @@ public class PaymentServiceImpl implements PaymentService {
                 .setFirstResult(pageNo * pageSize)
                 .getResultList();
     }
-    @Override
-    public Payment getPaymentByPostNum(Long postNum) {
-        return this.paymentRepository.findByPostNum(postNum);
-    }
 
     @Override
     public void handlePaymentExpire(LocalDate date) {
@@ -304,10 +305,7 @@ public class PaymentServiceImpl implements PaymentService {
             post.setStatus(Status.delete);
             post.setUpdateAt(LocalDate.now());
             this.postRepository.save(post);
-            Notify notify = new Notify(NotificationService.TITLE_EXPIRED, "",
-                    String.format(NotificationService.CONTENT_EXPIRED, payment.getPostNum()),
-                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
-            this.notificationService.createNotification(notify);
+            Notify notify = this.notifyService.createNotifyPayExpired(payment);
             this.messagingTemplate.convertAndSendToUser(payment.getCustomer().getUsername(), "/user/notify", notify);
         }
         log.info("Checking payment expiration... done with " + payments.size() + " payments.");
@@ -315,13 +313,19 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void handleRemindPayment(LocalDate date) {
-        List<Payment> payments = this.paymentRepository.findByExpireAtAndStatus(date.minusDays(1), PaymentStatus.PENDING);
-        for (Payment payment : payments) {
-            Notify notify = new Notify(NotificationService.TITLE_PENDING, "",
-                    String.format(NotificationService.CONTENT_PENDING, payment.getTotalPrice(),payment.getExpireAt()),
-                    LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
-            this.notificationService.createNotification(notify);
-        }
-        log.info("Checking payment expiration... done with " + payments.size() + " payments.");
+        // List<Payment> payments = this.paymentRepository.findByExpireAtAndStatus(date.minusDays(1), PaymentStatus.PENDING);
+        // for (Payment payment : payments) {
+        //     Notify notify = new Notify(NotificationService.TITLE_PENDING, "",
+        //             String.format(NotificationService.CONTENT_PENDING, payment.getTotalPrice(),payment.getExpireAt()),
+        //             LocalDate.now().toString(), false, payment.getCustomer().getId().intValue());
+        //     this.notificationService.createNotification(notify);
+        // }
+        // log.info("Checking payment expiration... done with " + payments.size() + " payments.");
+    }
+
+    @Override
+    public Payment getPaymentByPost(Post post) {
+        return this.paymentRepository.findByPostCost(this.postCostRepository.findByPost(post))
+                .orElseThrow( () -> new NotFoundException("Payment not found.", HttpStatus.NOT_FOUND));
     }
 }

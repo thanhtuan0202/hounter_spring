@@ -6,12 +6,12 @@ import com.hounter.backend.business_logic.entities.Payment;
 public class AdminMapping {
     public static PaymentResAdminDTO mappingPayment(Payment payment){
         PaymentResAdminDTO paymentResAdminDTO = new PaymentResAdminDTO();
-        paymentResAdminDTO.setPostNum(payment.getPostNum());
+        paymentResAdminDTO.setPostNum(payment.getPostCost().getPost().getId());
         paymentResAdminDTO.setTotalPrice(payment.getTotalPrice());
         paymentResAdminDTO.setCreateAt(payment.getCreateAt());
         paymentResAdminDTO.setPaymentAt(payment.getPaymentDate());
         paymentResAdminDTO.setPaymentMethod(payment.getPaymentMethod());
-        paymentResAdminDTO.setTransactionId(payment.getPaymentId());
+        paymentResAdminDTO.setTransactionId(payment.getVnPayTransactionId());
         paymentResAdminDTO.setCustomerName(payment.getCustomer().getFull_name());
         paymentResAdminDTO.setStatus(payment.getStatus());
         paymentResAdminDTO.setPaymentInfo(payment.getPaymentInfo());

@@ -6,14 +6,19 @@ import jakarta.validation.constraints.Digits;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
 
+
+
 @Entity
 @Table(name = "posts")
+@Indexed
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,8 +30,10 @@ public class Post {
     private Long id;
 
     @Column(name = "title", nullable = false)
+    @FullTextField
     private String title;
 
+    @FullTextField
     @Column(name = "description", nullable = false,length = 10000)
     private String description;
 
@@ -42,18 +49,18 @@ public class Post {
     @Column(name = "customer_phone",length = 11, nullable = false)
     private String customerPhone;
 
-    @Column(name = "note")
+    @Column(name = "note", nullable = true)
     private String notes;
 
     @Column(name = "status", nullable = false)
     private Status status = Status.waiting;
 
-    @Column(name = "latitude", precision = 10, scale = 8)
-    @Digits(integer=2, fraction=8)
+    @Column(name = "latitude", precision = 17, scale = 15)
+    @Digits(integer=2, fraction=15)
     private BigDecimal latitude;
 
-    @Column(name = "longitude", precision = 11, scale = 8)
-    @Digits(integer=3, fraction=8)
+    @Column(name = "longitude", precision = 18, scale = 15)
+    @Digits(integer=3, fraction=15)
     private BigDecimal longitude;
 
     @Column(name = "create_at")

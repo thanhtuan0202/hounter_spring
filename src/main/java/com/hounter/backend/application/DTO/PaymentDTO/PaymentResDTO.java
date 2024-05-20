@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -16,7 +17,7 @@ public class PaymentResDTO {
     private String paymentMethod;
     private String paymentInfo;
     private LocalDate createAt;
-    private LocalDate paymentAt;
+    private LocalDateTime paymentAt;
     private String transactionId;
     private Long postId;
     private String postTitle;

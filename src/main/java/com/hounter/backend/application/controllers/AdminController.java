@@ -2,8 +2,10 @@ package com.hounter.backend.application.controllers;
 
 import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.business_logic.entities.Payment;
+import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.business_logic.interfaces.AdminService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
+import com.hounter.backend.business_logic.services.NotifyService;
 import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
@@ -25,6 +27,9 @@ import java.util.List;
 public class AdminController {
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private NotifyService notifyService;
     @GetMapping("/users")
     public ResponseEntity<?> getUserAccounts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -153,17 +158,28 @@ public class AdminController {
     @PatchMapping("/posts/{postId}")
     public ResponseEntity<?> updatePostStatus(
             @PathVariable("postId") Long postId,
-            @RequestBody Status status
+            @Valid @RequestBody Status status
     ){
-
-        return null;
-    }
-    @DeleteMapping("/staffs/{staffId}")
-    public ResponseEntity<?> deleteStaffAccount(@PathVariable("staffId") Long staffId){
         try{
-            boolean isDeleted = this.adminService.deleteStaff(staffId);
+            Post post = this.adminService.updatePostStatus(postId, status);
+            if (status.equals(Status.delete)) {
+                this.notifyService.createNotifyDeletePostByAdmin(post);
+            }
+            return ResponseEntity.ok("Post status updated successfully.");
+        }
+        catch (NotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @DeleteMapping("/account/{accountId}")
+    public ResponseEntity<?> deleteStaffAccount(@PathVariable("accountId") Long accountId){
+        try{
+            boolean isDeleted = this.adminService.deleteAccount(accountId);
             if(isDeleted){
-                return ResponseEntity.ok("Staff delete successfully.");
+                return ResponseEntity.ok("Account delete successfully.");
             }
             else{
                 return ResponseEntity.ok("Something went wrong.");

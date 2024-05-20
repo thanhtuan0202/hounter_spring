@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
@@ -22,8 +23,11 @@ public class Payment {
     @Column(name = "payment_info")
     private String paymentInfo;
 
-    @Column(name = "post_num")
-    private Long postNum;
+    @Column(name = "vnpay_TxnRef")
+    private String vnPayTxnRef;
+
+    @Column(name = "num_of_attempts")
+    private Integer numOfAttempts = 0;
 
     @Column(name = "status", nullable = false)
     private PaymentStatus status = PaymentStatus.PENDING;
@@ -38,13 +42,13 @@ public class Payment {
     private LocalDate expireAt;
 
     @Column(name = "payment_date")
-    private LocalDate paymentDate;
+    private LocalDateTime paymentDate;
 
     @Column(name = "payment_method")
     private String paymentMethod;
 
     @Column(name = "transaction_id")
-    private String paymentId;
+    private String vnPayTransactionId;
 
     @OneToOne
     @JoinColumn(name = "post_cost_id", referencedColumnName = "id",nullable = false)

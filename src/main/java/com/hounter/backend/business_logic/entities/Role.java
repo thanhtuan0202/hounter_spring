@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
-
 @Entity
 @Table(name = "role")
 @Getter
@@ -21,9 +19,6 @@ public class Role {
 
     @Column(name = "description", columnDefinition = "text",nullable = false)
     private String description;
-
-    @ManyToMany(mappedBy = "roles")
-    private Set<Account> accounts;
 
 }
 

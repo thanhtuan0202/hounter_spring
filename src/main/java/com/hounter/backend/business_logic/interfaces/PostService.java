@@ -30,7 +30,7 @@ public interface PostService {
     PostOfUserRes getPostDetailOfUser(Long postId);
     FeedbackResponse createNewFeedback(CreateFeedback createFeedback, Long postId, Long userId);
     List<ShortPostResponse> filterPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir,FilterPostDto filter);
-    List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo,String sortBy,String sortDir, String q) throws Exception;
+    List<ShortPostResponse> searchPost(Integer pageSize,Integer pageNo, String q) throws Exception;
     //admin
     List<FeedbackResponse> getPostFeedback(Integer pageSize, Integer pageNo,Long postId);
     boolean changeStatusPost(Long postId,Long userId, ChangeStatusDto changeStatus, boolean isAdmin) throws Exception;

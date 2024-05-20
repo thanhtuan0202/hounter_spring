@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 @Component
@@ -27,13 +31,13 @@ public class TaskSchedulerImpl implements TaskScheduler{
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.HOURS)
     public void resetDatabase() throws IOException {
         log.info("Resetting database...");
-//        Path path = Paths.get(ResourceUtils.getFile("classpath:data.sql").toURI());
-//        String sql = new String(Files.readAllBytes(path));
-//        for (String statement : sql.split(";")) {
-//            if (!statement.trim().isEmpty()) {
-//                jdbcTemplate.execute(statement);
-//            }
-//        }
+        Path path = Paths.get(ResourceUtils.getFile("classpath:data.sql").toURI());
+        String sql = new String(Files.readAllBytes(path));
+        for (String statement : sql.split(";")) {
+            if (!statement.trim().isEmpty()) {
+                jdbcTemplate.execute(statement);
+            }
+        }
         log.info("Database reset complete.");
     }
 

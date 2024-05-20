@@ -378,12 +378,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir, String q)
+    public List<ShortPostResponse> searchPost(Integer pageSize, Integer pageNo , String q)
             throws Exception {
-
-        return this.postRepository.search(q, em).stream().filter(post -> post.getStatus() == Status.active)
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString("desc"), "create_at"));
+        return this.postRepository.searchBy(q, pageable).stream().filter(post -> post.getStatus() == Status.active)
                 .map(post -> PostMapping.getShortPostResponse(post, this.postCostService.findByPost(post))).toList();
-
     }
 
     @Override

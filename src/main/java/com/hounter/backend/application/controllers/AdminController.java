@@ -33,10 +33,11 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<?> getUserAccounts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "search", required = false) String search
     ){
         try{
-            List<CustomerListResDTO> response = this.adminService.getListCustomer(pageNo - 1, pageSize);
+            List<CustomerListResDTO> response = this.adminService.getListCustomer(pageNo - 1, pageSize, search);
             return ResponseEntity.ok(response);
         }
         catch (Exception e){

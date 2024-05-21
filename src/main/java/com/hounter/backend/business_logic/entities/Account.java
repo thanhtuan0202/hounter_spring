@@ -8,9 +8,13 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+
 @Entity
 @Getter
 @Setter
+@Indexed
 @NoArgsConstructor
 @Table(name = "accounts")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -20,9 +24,11 @@ public class Account {
     @Column(name = "id")
     private Long id;
 
+    @FullTextField
     @Column(name = "full_name", nullable = false)
     private String full_name;
 
+    @FullTextField
     @Column(name = "username", unique = true, nullable = false)
     private String username;
 

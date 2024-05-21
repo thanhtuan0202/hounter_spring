@@ -13,7 +13,7 @@ import com.hounter.backend.shared.enums.Status;
 import java.util.List;
 
 public interface AdminService {
-    List<CustomerListResDTO> getListCustomer(Integer pageNo, Integer pageSize);
+    List<CustomerListResDTO> getListCustomer(Integer pageNo, Integer pageSize, String search);
     CustomerRestDTO getCustomerInfo(Long customerId);
     boolean createStaff(CreateStaffDTO createStaffDTO);
     List<StaffResDTO> getListStaff(Integer pageNo, Integer pageSize);

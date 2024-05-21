@@ -25,6 +25,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @Slf4j
@@ -47,15 +49,24 @@ public class AdminServiceImpl implements AdminService {
 
     private final PasswordEncoder passwordEncoder;
 
+    @PersistenceContext
+    protected EntityManager em;
+
     public AdminServiceImpl(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<CustomerListResDTO> getListCustomer(Integer pageNo, Integer pageSize) {
+    public List<CustomerListResDTO> getListCustomer(Integer pageNo, Integer pageSize, String search) {
         Pageable pageable =  PageRequest.of(pageNo, pageSize);
-        Page<Customer> customers = this.customerRepository.findAll(pageable);
-        List<Customer> customerLst = customers.stream().toList();
+        List<Customer> customerLst = null;
+        if (search != null && !search.isEmpty()) {
+            customerLst = this.customerRepository.search(search,  em);
+        }
+        else {
+            Page<Customer> customers = this.customerRepository.findAll(pageable);
+            customerLst = customers.stream().toList();
+        }
         List<CustomerListResDTO> response = new ArrayList<>();
         for(Customer customer : customerLst){
             response.add(CustomerMapping.adminListMapping(customer));

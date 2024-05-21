@@ -76,7 +76,7 @@ public class SecurityConfig {
                                 // .requestMatchers(HttpMethod.PUT,"/posts/**").hasRole("USER")
                                 .requestMatchers("/customers/**").hasRole("USER")
 //                                .requestMatchers("/addresses/**").hasRole("USER")
-                                .requestMatchers("/feedbacks/**").hasRole("ADMIN")
+                                .requestMatchers("/feedbacks/**").hasAnyRole("ADMIN", "STAFF")
                                 .requestMatchers("/staffs/**").permitAll()
                                 .anyRequest().permitAll()
                 ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

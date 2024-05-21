@@ -64,7 +64,7 @@ public class GoongUtils {
 
     public GoongUtils() {
         this.url = "https://rsapi.goong.io/Place/AutoComplete?api_key=%s&input=%s";
-        this.apiKey = "qpFQmvMz1is1jrm5JgfJVbJNkzKRC6TCT4YxbD9x";
+        this.apiKey = "wm6rop0RGudKsMiUc9wf8f4TtXnDYda3NWdmAVZd";
         this.detailUrl = "https://rsapi.goong.io/Place/Detail?api_key=%s&place_id=%s";
     }
 

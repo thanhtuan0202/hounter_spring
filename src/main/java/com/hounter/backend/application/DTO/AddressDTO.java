@@ -17,9 +17,22 @@ public class AddressDTO {
         public String street;
 
         public AddressResDTO(Address address){
-            this.province = address.getProvince().getName();
-            this.district = address.getDistrict().getName();
-            this.ward = address.getWard().getName();
+            this.province = address.getProvince().getNameWithType();
+            this.district = address.getDistrict().getNameWithType();
+            this.ward = address.getWard().getNameWithType();
+            this.street = address.getStreet();
+        }
+    }
+    public static class AddressResIdDTO{
+        public Integer province;
+        public Integer district;
+        public Integer ward;
+        public String street;
+
+        public AddressResIdDTO(Address address){
+            this.province = address.getProvince().getCode();
+            this.district = address.getDistrict().getCode();
+            this.ward = address.getWard().getCode();
             this.street = address.getStreet();
         }
     }

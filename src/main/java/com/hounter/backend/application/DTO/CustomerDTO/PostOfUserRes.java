@@ -17,7 +17,7 @@ public class PostOfUserRes {
     private String description;
     private Integer price;
     private Integer area;
-    private AddressDTO.AddressResDTO address;
+    private AddressDTO.AddressResIdDTO address;
     private String ownerName;
     private String ownerPhone;
     private String category;

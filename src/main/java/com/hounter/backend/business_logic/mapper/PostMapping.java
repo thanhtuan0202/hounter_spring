@@ -111,7 +111,7 @@ public class PostMapping {
         postDetail.setPrice(post.getPrice());
         postDetail.setArea(post.getArea());
         postDetail.setCategory(post.getCategory().getName());
-        postDetail.setAddress(new AddressDTO.AddressResDTO(post.getAddress()));
+        postDetail.setAddress(new AddressDTO.AddressResIdDTO(post.getAddress()));
         postDetail.setOwnerName(post.getCustomerName());
         postDetail.setOwnerPhone(post.getCustomerPhone());
         postDetail.setNotes(post.getNotes());

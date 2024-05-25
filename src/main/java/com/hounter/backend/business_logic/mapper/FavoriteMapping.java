@@ -18,7 +18,9 @@ public class FavoriteMapping {
         response.setTitle(post.getPost().getTitle());
         response.setPrice(post.getPost().getPrice());
         response.setAddress(post.getPost().getAddress().toString());
-        response.setImage(lst.get(0).getImageUrl());
+        if (images.size() > 0) {
+            response.setImage(lst.get(0).getImageUrl());
+        }
         response.setArea(post.getPost().getArea());
         response.setOwner(new ShortCustomer(post.getPost().getCustomer().getId(), post.getPost().getCustomer().getFull_name(), post.getPost().getCustomer().getAvatar()));
         response.setCategory(post.getPost().getCategory().getId());

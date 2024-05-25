@@ -34,7 +34,7 @@ public class NotifyService {
     public NotifyDTO ReadNotify(Long notifyId) {
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long accountId = ((Account) principal).getId();
+        Long accountId = ((CustomUserDetail) principal).getUserId();
         Optional <Account> account = accountRepository.findById(accountId);
         if (account.isEmpty()) {
             throw new RuntimeException("Account not found");

@@ -324,10 +324,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<ShortPostResponse> filterPost(Integer pageSize, Integer pageNo, String sortBy, String sortDir,
             FilterPostDto filter) {
-        Optional<Category> category = this.categoryRepository.findById(filter.getCategory());
-        if (category.isEmpty()) {
-            return null;
-        }
+        // Optional<Category> category = this.categoryRepository.findById(filter.getCategory());
+        // if (category.isEmpty()) {
+        //     return null;
+        // }
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Post> cq = cb.createQuery(Post.class);
 
@@ -344,9 +344,10 @@ public class PostServiceImpl implements PostService {
             predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getUpperPrice()));
         }
         if (filter.getLowerPrice() != null) {
-            predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getLowerPrice()));
+            predicates.add(cb.greaterThanOrEqualTo(post.get("price"), filter.getLowerPrice()));
         }
         if (filter.getCategory() != null) {
+            Optional<Category> category = this.categoryRepository.findById(filter.getCategory());
             predicates.add(cb.equal(post.get("category"), category.get()));
         }
         if (filter.getStatus() != null) {

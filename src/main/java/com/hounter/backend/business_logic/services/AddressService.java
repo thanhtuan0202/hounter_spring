@@ -1,17 +1,18 @@
 package com.hounter.backend.business_logic.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.hounter.backend.application.DTO.AddressDTO;
+import com.hounter.backend.business_logic.entities.District;
+import com.hounter.backend.business_logic.entities.Province;
+import com.hounter.backend.business_logic.entities.Ward;
+import com.hounter.backend.data_access.repositories.DistrictRepository;
+import com.hounter.backend.data_access.repositories.ProvinceRepository;
+import com.hounter.backend.data_access.repositories.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hounter.backend.application.DTO.AddressDTO;
-import com.hounter.backend.data_access.repositories.DistrictRepository;
-import com.hounter.backend.data_access.repositories.ProvinceRepository;
-import com.hounter.backend.business_logic.entities.District;
-import com.hounter.backend.business_logic.entities.Province;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressService {
@@ -21,6 +22,9 @@ public class AddressService {
 
     @Autowired
     private DistrictRepository districtRepository;
+
+    @Autowired
+    private WardRepository wardRepository;
 
     public List<AddressDTO.ProvinceDTO> getProvinceList(){
         List<Province> provinces = this.provinceRepository.findAll();
@@ -43,5 +47,10 @@ public class AddressService {
             response.add(new AddressDTO.DistrictDTO(district));
         }
         return response;
+    }
+
+    public AddressDTO.WardDTO findWardId(String ward, String district, String province){
+        Ward ward_ = this.wardRepository.findWard(ward, district, province);
+        return new AddressDTO.WardDTO(ward_);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +33,7 @@ public class TaskSchedulerImpl implements TaskScheduler{
     public void resetDatabase() throws IOException {
         log.info("Resetting database...");
         Path path = Paths.get(ResourceUtils.getFile("classpath:data.sql").toURI());
-        String sql = new String(Files.readAllBytes(path));
+        String sql = Files.readString(path, StandardCharsets.UTF_8);
         for (String statement : sql.split(";")) {
             if (!statement.trim().isEmpty()) {
                 jdbcTemplate.execute(statement);

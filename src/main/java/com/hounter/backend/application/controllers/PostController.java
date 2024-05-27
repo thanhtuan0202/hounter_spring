@@ -44,7 +44,7 @@ public class PostController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "type", defaultValue = "1") Long type) {
         try {
-            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "createAt", "desc",
+            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "activeAt", "desc",
                     Status.active);
             if (response == null) {
                 return ResponseEntity.noContent().build();

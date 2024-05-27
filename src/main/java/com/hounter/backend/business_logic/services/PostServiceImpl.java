@@ -11,19 +11,13 @@ import com.hounter.backend.business_logic.interfaces.PostCostService;
 import com.hounter.backend.business_logic.interfaces.PostImageService;
 import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.mapper.PostMapping;
-import com.hounter.backend.data_access.repositories.AddressRepository;
-import com.hounter.backend.data_access.repositories.CategoryRepository;
-import com.hounter.backend.data_access.repositories.CustomerRepository;
-import com.hounter.backend.data_access.repositories.PostRepository;
-import com.hounter.backend.data_access.repositories.WardRepository;
+import com.hounter.backend.data_access.repositories.*;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.CategoryNotFoundException;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
-
 import com.hounter.backend.shared.utils.FindPointsAddress;
 import com.hounter.backend.shared.utils.GoongUtils;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -31,7 +25,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,12 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import java.util.ArrayList;
 
 @Service
 @Slf4j
@@ -157,10 +150,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post findPostById(Long postId) {
         Optional<Post> post = this.postRepository.findById(postId);
-        if (post.isPresent()) {
-            return post.get();
-        }
-        return null;
+        return post.orElse(null);
     }
 
     @Override
@@ -336,9 +326,7 @@ public class PostServiceImpl implements PostService {
 
         if (filter.getWardId() != null) {
             Optional<Ward> ward = this.wardRepository.findByCode(filter.getWardId());
-            if (!ward.isEmpty()) {
-                predicates.add(cb.equal(post.get("address").get("ward"), ward.get()));
-            }
+            ward.ifPresent(value -> predicates.add(cb.equal(post.get("address").get("ward"), value)));
         }
         if (filter.getUpperPrice() != null) {
             predicates.add(cb.lessThanOrEqualTo(post.get("price"), filter.getUpperPrice()));
@@ -356,7 +344,7 @@ public class PostServiceImpl implements PostService {
             predicates.add(cb.equal(post.get("status"), Status.active));
         }
         cq.where(predicates.toArray(new Predicate[0]));
-        cq.orderBy(cb.desc(post.get("createAt")));
+        cq.orderBy(cb.desc(post.get("activeAt")));
         List<Post> posts = em.createQuery(cq).setMaxResults(pageSize)
                 .setFirstResult(pageNo * pageSize)
                 .getResultList();
@@ -429,6 +417,7 @@ public class PostServiceImpl implements PostService {
                 if (status.equals(Status.active.toString())) {
                     post.setStatus(Status.active);
                     post.setUpdateAt(LocalDate.now());
+                    post.setActiveAt(LocalDateTime.now());
                     post.setExpireAt(LocalDate.now().plusDays(postCost.getActiveDays()));
                 } else if (status.equals(Status.delete.toString())) {
                     post.setStatus(Status.delete);

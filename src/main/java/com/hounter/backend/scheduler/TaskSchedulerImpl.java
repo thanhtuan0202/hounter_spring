@@ -39,6 +39,19 @@ public class TaskSchedulerImpl implements TaskScheduler{
                 jdbcTemplate.execute(statement);
             }
         }
+        String function_sql = "CREATE FUNCTION `distance_haversine`(lat1 float, lon1 float, lat2 float, lon2 float) RETURNS float " +
+                "BEGIN " +
+                "    DECLARE d_lat FLOAT; " +
+                "    DECLARE d_lon FLOAT; " +
+                "    DECLARE a FLOAT; " +
+                "    DECLARE c FLOAT; " +
+                "    SET d_lat = RADIANS(lat2 - lat1); " +
+                "    SET d_lon = RADIANS(lon2 - lon1); " +
+                "    SET a = SIN(d_lat / 2) * SIN(d_lat / 2) + COS(RADIANS(lat1)) * COS(RADIANS(lat2)) * SIN(d_lon / 2) * SIN(d_lon / 2); " +
+                "    SET c = 2 * ATAN2(SQRT(a), SQRT(1 - a)); " +
+                "    RETURN 6371 * c; " +
+                "END";
+        jdbcTemplate.execute(function_sql);
         log.info("Database reset complete.");
     }
 

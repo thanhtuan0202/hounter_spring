@@ -1,24 +1,19 @@
 package com.hounter.backend.config;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import java.util.*;
 //import javax.servlet.http.HttpServletRequest;
 
 
 public class VnpayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "http://localhost:8080/api/payments/callback";
+    public static String vnp_ReturnUrl = "https://api.hounter.online/api/payments/callback";
     public static String vnp_TmnCode = "H0ULMT3O";
     public static String secretKey = "NLDZIFDYWKLCMQEJYTYDDTVVYFDMFPTV";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";

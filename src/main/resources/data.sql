@@ -1,5 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `schema` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `schema`;
+CREATE DATABASE  IF NOT EXISTS `hounter` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `hounter`;
 -- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: hounter
@@ -40,7 +40,7 @@ CREATE TABLE `account_role` (
 
 LOCK TABLES `account_role` WRITE;
 /*!40000 ALTER TABLE `account_role` DISABLE KEYS */;
-INSERT INTO `account_role` VALUES (1,1),(2,1),(52,1),(53,1),(54,1),(55,1),(56,1),(57,1),(58,1),(59,1),(60,1);
+INSERT INTO `account_role` VALUES (1,1),(2,1),(52,1),(53,1),(54,1),(55,1),(56,1),(57,1),(58,1),(59,1),(60,1),(3,2),(152,3);
 /*!40000 ALTER TABLE `account_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -73,7 +73,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES ('2024-05-23',_binary '','2024-05-23',1,NULL,'example@email.com','Thanh Tuan Nguyen','$2a$10$EJDOHQD2hXwbsn7DtubaM.Wk3Pi6fZJWzr0F7yzw792lFRjPpQynG','tuancs02'),('2024-05-24',_binary '','2024-05-24',2,NULL,'homestay@email.com','Homestay','$2a$10$GSX/tRC0s0zQJGNlxP8YdOQhsXlfmmK7NRSFwyYXifsAllcdmxntq','homestay'),('2024-05-24',_binary '','2024-05-24',52,NULL,'anh@email.com','Nguyen Kieu Anh','$2a$10$yHaUDo.t6HhJXrp9IF9eteg2BGwUfyiD58/brhb1Crmoz71Tm8i0m','kieuanh'),('2024-05-24',_binary '','2024-05-24',53,NULL,'hoang@email.com','Nguyen Huy Hoang','$2a$10$4jEOevvXnVigWMDhpO8e2ep9iH.RBvASfztwQ.ZL2yQcEhlvDW5pe','huyhoang'),('2024-05-24',_binary '','2024-05-24',54,NULL,'linh@email.com','Pham Thuy Linh','$2a$10$aDlAO0Iw3zxYZDmV9.apLucti4O8gQkNRWjs.x7aog4xBueAdPnMS','thuylinh'),('2024-05-24',_binary '','2024-05-24',55,NULL,'nhung@email.com','Nguyen Hong Nhung','$2a$10$SUcv9FO.lAvgvIA88wY6bOVYwXHo407aZROlxnjzs6hWltwaHJGpG','hongnhung'),('2024-05-24',_binary '','2024-05-24',56,NULL,'user@email.com','Nguyen Tuan','$2a$10$SwX8vxLlI.ZzpPyIjxVrSu96MQaSoTgvjrk..I46J2.7Hd0i85SZu','user'),('2024-05-24',_binary '','2024-05-24',57,NULL,'hieu@email.com','Dang Hieu','$2a$10$2MnrOspoqNEFvb9xwVZuFuwMgCAMZcnODQrFf1fOTMei7pVa2uuda','danghieu'),('2024-05-24',_binary '','2024-05-24',58,NULL,'bao@email.com','Nguyen Quang Bao','$2a$10$Q9rcV2J/ohupDbBSI43JIeG79hdu.00vOT5M2hIBx0llSX1dtlbdC','bao123'),('2024-05-24',_binary '','2024-05-24',59,NULL,'phat@email.com','Nguyen Thanh Phat','$2a$10$ojiW3WKklalQvr0vsURDxuYm2.Y36tqWy.EUmU65r6A0NoalUP7ES','thanhphat'),('2024-05-24',_binary '','2024-05-24',60,NULL,'tai@email.com','Le Van Tai','$2a$10$Gog5R/AwkRIp9wY5CftLdO.wM8sZipHkabIeX/kxEDKm7e9olFXnm','vantai');
+INSERT INTO `accounts` VALUES ('2024-05-23',_binary '','2024-05-23',1,NULL,'example@email.com','Thanh Tuan Nguyen','$2a$10$EJDOHQD2hXwbsn7DtubaM.Wk3Pi6fZJWzr0F7yzw792lFRjPpQynG','tuancs02'),('2024-05-24',_binary '','2024-05-24',2,NULL,'homestay@email.com','Homestay','$2a$10$GSX/tRC0s0zQJGNlxP8YdOQhsXlfmmK7NRSFwyYXifsAllcdmxntq','homestay'),('2024-05-30',_binary '','2024-05-30',3,NULL,'admin@hounter.com','admin','$2a$10$CoxQq2FZ1K6wNSZ6TP95o.5S0WH8HrImVVpKD3lM5AcBwPuBR1.l6','admin'),('2024-05-24',_binary '','2024-05-24',52,NULL,'anh@email.com','Nguyen Kieu Anh','$2a$10$yHaUDo.t6HhJXrp9IF9eteg2BGwUfyiD58/brhb1Crmoz71Tm8i0m','kieuanh'),('2024-05-24',_binary '','2024-05-24',53,NULL,'hoang@email.com','Nguyen Huy Hoang','$2a$10$4jEOevvXnVigWMDhpO8e2ep9iH.RBvASfztwQ.ZL2yQcEhlvDW5pe','huyhoang'),('2024-05-24',_binary '','2024-05-24',54,NULL,'linh@email.com','Pham Thuy Linh','$2a$10$aDlAO0Iw3zxYZDmV9.apLucti4O8gQkNRWjs.x7aog4xBueAdPnMS','thuylinh'),('2024-05-24',_binary '','2024-05-24',55,NULL,'nhung@email.com','Nguyen Hong Nhung','$2a$10$SUcv9FO.lAvgvIA88wY6bOVYwXHo407aZROlxnjzs6hWltwaHJGpG','hongnhung'),('2024-05-24',_binary '','2024-05-24',56,NULL,'user@email.com','Nguyen Tuan','$2a$10$SwX8vxLlI.ZzpPyIjxVrSu96MQaSoTgvjrk..I46J2.7Hd0i85SZu','user'),('2024-05-24',_binary '','2024-05-24',57,NULL,'hieu@email.com','Dang Hieu','$2a$10$2MnrOspoqNEFvb9xwVZuFuwMgCAMZcnODQrFf1fOTMei7pVa2uuda','danghieu'),('2024-05-24',_binary '','2024-05-24',58,NULL,'bao@email.com','Nguyen Quang Bao','$2a$10$Q9rcV2J/ohupDbBSI43JIeG79hdu.00vOT5M2hIBx0llSX1dtlbdC','bao123'),('2024-05-24',_binary '','2024-05-24',59,NULL,'phat@email.com','Nguyen Thanh Phat','$2a$10$ojiW3WKklalQvr0vsURDxuYm2.Y36tqWy.EUmU65r6A0NoalUP7ES','thanhphat'),('2024-05-24',_binary '','2024-05-24',60,NULL,'tai@email.com','Le Van Tai','$2a$10$Gog5R/AwkRIp9wY5CftLdO.wM8sZipHkabIeX/kxEDKm7e9olFXnm','vantai'),('2024-05-30',_binary '','2024-05-30',152,NULL,'nttuan@hounter.com','Nguyễn Thành Tuân','$2a$10$ZFlzeoBCv30ftE2Yugl7x.4K/6da1MmI4TFoCBRNYORl8P6tcZZGC','tuanstaff');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,7 +95,7 @@ CREATE TABLE `accounts_seq` (
 
 LOCK TABLES `accounts_seq` WRITE;
 /*!40000 ALTER TABLE `accounts_seq` DISABLE KEYS */;
-INSERT INTO `accounts_seq` VALUES (151);
+INSERT INTO `accounts_seq` VALUES (251);
 /*!40000 ALTER TABLE `accounts_seq` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -725,6 +725,7 @@ CREATE TABLE `staffs` (
 
 LOCK TABLES `staffs` WRITE;
 /*!40000 ALTER TABLE `staffs` DISABLE KEYS */;
+INSERT INTO `staffs` VALUES ('2000-11-09','2024-05-30',152,'0367760940','Vĩnh Phúc');
 /*!40000 ALTER TABLE `staffs` ENABLE KEYS */;
 UNLOCK TABLES;
 

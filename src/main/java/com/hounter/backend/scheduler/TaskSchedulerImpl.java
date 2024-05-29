@@ -39,6 +39,8 @@ public class TaskSchedulerImpl implements TaskScheduler{
                 jdbcTemplate.execute(statement);
             }
         }
+        jdbcTemplate.execute("SET GLOBAL log_bin_trust_function_creators = 1;");
+        jdbcTemplate.execute("DROP FUNCTION IF EXISTS distance_haversine;");
         String function_sql = "CREATE FUNCTION `distance_haversine`(lat1 float, lon1 float, lat2 float, lon2 float) RETURNS float " +
                 "BEGIN " +
                 "    DECLARE d_lat FLOAT; " +

@@ -3,13 +3,21 @@ package com.hounter.backend.business_logic.services;
 import com.hounter.backend.application.DTO.AdminDTO.*;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
 import com.hounter.backend.business_logic.entities.*;
-import com.hounter.backend.business_logic.interfaces.*;
+import com.hounter.backend.business_logic.interfaces.AccountRoleService;
+import com.hounter.backend.business_logic.interfaces.AdminService;
+import com.hounter.backend.business_logic.interfaces.PaymentService;
+import com.hounter.backend.business_logic.interfaces.PostService;
 import com.hounter.backend.business_logic.mapper.AdminMapping;
 import com.hounter.backend.business_logic.mapper.CustomerMapping;
-import com.hounter.backend.data_access.repositories.*;
+import com.hounter.backend.data_access.repositories.AccountRepository;
+import com.hounter.backend.data_access.repositories.CustomerRepository;
+import com.hounter.backend.data_access.repositories.PostRepository;
+import com.hounter.backend.data_access.repositories.StaffRepository;
 import com.hounter.backend.shared.enums.PaymentStatus;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.NotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,8 +33,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 @Service
 @Slf4j

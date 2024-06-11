@@ -5,7 +5,6 @@ import com.hounter.backend.application.DTO.CustomerDTO.PostOfUserRes;
 import com.hounter.backend.application.DTO.CustomerDTO.UpdateInfoDTO;
 import com.hounter.backend.application.DTO.PaymentDTO.PaymentResDTO;
 import com.hounter.backend.application.DTO.PostDto.ShortPostResponse;
-import com.hounter.backend.business_logic.entities.Notify;
 import com.hounter.backend.business_logic.interfaces.CustomerService;
 import com.hounter.backend.business_logic.services.CustomUserDetailServiceImpl;
 import com.hounter.backend.business_logic.services.NotifyService;

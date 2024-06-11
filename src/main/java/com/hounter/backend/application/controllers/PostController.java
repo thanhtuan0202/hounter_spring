@@ -10,7 +10,6 @@ import com.hounter.backend.shared.binding.BindingBadRequest;
 import com.hounter.backend.shared.enums.Status;
 import com.hounter.backend.shared.exceptions.ForbiddenException;
 import com.hounter.backend.shared.exceptions.PostNotFoundException;
-import com.hounter.backend.shared.utils.FindPointsAddress;
 import com.hounter.backend.shared.utils.GoongUtils;
 import com.hounter.backend.shared.utils.MappingError;
 import jakarta.validation.Valid;
@@ -45,7 +44,7 @@ public class PostController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "type", defaultValue = "1") Long type) {
         try {
-            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "createAt", "desc",
+            List<ShortPostResponse> response = this.postService.getAllPost(pageSize, pageNo - 1, "activeAt", "desc",
                     Status.active);
             if (response == null) {
                 return ResponseEntity.noContent().build();
@@ -110,11 +109,9 @@ public class PostController {
     public ResponseEntity<?> getSearchPosts(
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "sortBy", defaultValue = "createAt") String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             @RequestParam(value = "q") String searchValue) {
         try {
-            return ResponseEntity.ok(this.postService.searchPost(pageSize, pageNo, sortBy, sortDir, searchValue));
+            return ResponseEntity.ok(this.postService.searchPost(pageSize, pageNo, searchValue));
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

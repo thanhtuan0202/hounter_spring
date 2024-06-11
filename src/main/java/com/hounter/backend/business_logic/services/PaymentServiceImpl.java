@@ -115,6 +115,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaymentMethod(bankCode);
         Post post = payment.getPostCost().getPost();
         post.setStatus(Status.active);
+        post.setUpdateAt(LocalDate.now());
+        post.setActiveAt(LocalDateTime.now());
         post.setExpireAt(LocalDate.now().plusDays(this.postCostRepository.findByPost(post).getActiveDays()));
         this.paymentRepository.save(payment);
         this.notifyService.createNotifyPaySuccess(payment);

@@ -2,12 +2,9 @@ package com.hounter.backend.application.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hounter.backend.business_logic.services.AddressService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/address")
@@ -23,5 +20,12 @@ public class AddressController {
     @GetMapping("/province/{id}")
     public ResponseEntity<?> getDetailProvince(@PathVariable("id") Long provinceId){
         return ResponseEntity.ok(this.addressService.getDetailProvince(provinceId.intValue()));
+    }
+
+    @GetMapping("/find-ward")
+    public ResponseEntity<?> findWardId(@RequestParam("ward") String ward,
+                                        @RequestParam("district") String district,
+                                        @RequestParam("province") String province){
+        return ResponseEntity.ok(this.addressService.findWardId(ward, district, province));
     }
 }

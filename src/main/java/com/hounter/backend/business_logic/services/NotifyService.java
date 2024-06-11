@@ -39,10 +39,16 @@ public class NotifyService {
         if (account.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
-        NotifyDTO notifyDTO = new NotifyDTO(notifyRepository.findById(notifyId).get());
-        notifyDTO.setIsRead(true);
-        notifyRepository.save(notifyDTO.toEntity(account.get()));
-        return notifyDTO;
+
+        Notify notify = notifyRepository.findById(notifyId).orElseThrow(() -> new RuntimeException("Notify not found"));
+
+        if (!notify.getAccount().equals(account.get())) {
+            throw new RuntimeException("You don't have permission to read this notify");
+        }
+
+        notify.setIsRead(true);
+        notifyRepository.save(notify);
+        return new NotifyDTO(notify);
     }
 
     public List<NotifyDTO> getNotifies(Integer pageNo, Integer pageSize) {

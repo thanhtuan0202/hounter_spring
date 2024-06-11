@@ -4,18 +4,14 @@ import com.hounter.backend.business_logic.entities.Category;
 import com.hounter.backend.business_logic.entities.Customer;
 import com.hounter.backend.business_logic.entities.Post;
 import com.hounter.backend.shared.enums.Status;
-
 import jakarta.persistence.EntityManager;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 
 import java.util.List;
 
@@ -39,4 +35,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                         .matching(searchTerm))
                 .fetchHits(5);
     }
+
+    @Query(value = "SELECT * FROM posts WHERE MATCH(title, description) AGAINST (:searchTerm IN NATURAL LANGUAGE MODE)", nativeQuery = true)
+    List<Post> searchBy(String searchTerm, Pageable pageable);
 }

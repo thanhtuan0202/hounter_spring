@@ -11,6 +11,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 
@@ -68,6 +69,8 @@ public class Post {
 
     @Column(name = "expire_at")
     private LocalDate expireAt;
+
+    private LocalDateTime activeAt;
 
     @Column(name = "update_at")
     private LocalDate updateAt;
